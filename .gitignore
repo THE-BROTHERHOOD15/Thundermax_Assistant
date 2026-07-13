@@ -1,3 +1,6 @@
 __pycache__/
 *.pyc
 *.tbw
+
+# Claude Code worktrees (other sessions) — never commit into this repo
+.claude/worktrees/
