@@ -25,9 +25,14 @@ Format knowledge (reverse-engineered from real tunes off the shop NAS):
   beyond                table data; observed 16-byte-stride rows of LE u16
                         (value, flag) pairs in timing regions
 
-All observed files are exactly 214470 bytes. Values in tables are raw device
-units; scaling to engineering units (degrees, AFR) is NOT yet confirmed, so
-compare output reports raw deltas alongside a few candidate scalings.
+Observed file sizes (ThunderMax firmware / map-family variants):
+  214470  classic TBW (header 0x87 / 0x147) — most 2025 shop tunes
+  214967  newer TBW (header 0x8B / 0x148) — 2026 FuelMoto 6.3 / CAM2 pair
+  225718  550-cam 6.3 flash file (header 0x84 / 0x143)
+  225990  other 131/550 hunt maps on desktop
+Values in tables are raw device units; scaling to engineering units
+(degrees, AFR) is NOT yet confirmed, so compare output reports raw
+deltas alongside a few candidate scalings.
 
 Numeric grid extraction to engineering units still requires TMax Tuner
 export - see the capture checklist in generated reports.
@@ -47,7 +52,8 @@ except Exception:  # module or json missing / malformed -> degrade gracefully
     table_map = None
     _TABLES = None
 
-EXPECTED_SIZE = 214470
+EXPECTED_SIZE = 214470  # canonical / most common; see KNOWN_SIZES
+KNOWN_SIZES = frozenset({214470, 214967, 225718, 225990})
 MAP_ID_OFFSET = 0x10
 HEADER_WORDS = 4
 # Region before this offset changes whenever anything changes (per-section
@@ -72,7 +78,7 @@ class TbwFile:
 
     @property
     def size_ok(self):
-        return len(self.data) == EXPECTED_SIZE
+        return len(self.data) in KNOWN_SIZES
 
     @property
     def id_ok(self):
@@ -97,7 +103,7 @@ class TbwFile:
         else:
             lines.append(
                 f"- **File status:** UNEXPECTED SIZE {len(self.data)} bytes "
-                f"(expected {EXPECTED_SIZE}) — verify this file"
+                f"(known sizes: {sorted(KNOWN_SIZES)}) — verify this file"
             )
         lines.append("- **Module family:** TBW (M8 compatible)")
         lines.append(
@@ -316,7 +322,7 @@ def main(argv=None):
         t = TbwFile(args.file)
         print(f"file:        {t.path.name}")
         print(f"base map ID: {t.base_map_id}")
-        print(f"size:        {len(t.data)} bytes ({'expected' if t.size_ok else 'UNEXPECTED'})")
+        print(f"size:        {len(t.data)} bytes ({'known' if t.size_ok else 'UNEXPECTED'})")
         print(f"header:      {' '.join(f'0x{w_:X}' for w_ in t.header)}")
         print(f"valid:       {t.valid}")
         return 0 if t.valid else 1

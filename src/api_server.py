@@ -123,6 +123,19 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _stream_override(self, text):
+        """Emit a shop-fact answer without calling the LLM."""
+        self._begin_stream()
+        try:
+            self._emit({"type": "model", "model": "shop-facts", "tier": "fast"})
+            self._emit({"type": "token", "t": text})
+            self._emit({"type": "done"})
+        except Exception as e:
+            try:
+                self._emit({"type": "error", "error": str(e)})
+            except Exception:
+                pass
+
     def _stream_answer(self, messages, mode, route_q):
         self._begin_stream()
         try:
@@ -149,6 +162,9 @@ class Handler(BaseHTTPRequestHandler):
             q = (body.get("question") or "").strip()
             if not q:
                 return self._json({"ok": False, "error": "question required"}, 400)
+            override = ta.shop_override(q)
+            if override:
+                return self._stream_override(override)
             return self._stream_answer(ta.build_messages(q), body.get("mode", "auto"), q)
 
         if path == "/api/chat":
@@ -167,6 +183,9 @@ class Handler(BaseHTTPRequestHandler):
                         break
             last_user = next((m["content"] for m in reversed(msgs)
                               if m.get("role") == "user"), "")
+            override = ta.shop_override(last_user)
+            if override:
+                return self._stream_override(override)
             return self._stream_answer(msgs, body.get("mode", "auto"), last_user)
 
         if path == "/api/analyze":

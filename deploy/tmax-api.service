@@ -1,0 +1,16 @@
+[Unit]
+Description=TMax Command Center (ThunderMax tuning assistant)
+After=network-online.target ollama.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=joshua
+WorkingDirectory=/home/joshua/Projects/thundermax-assistant
+ExecStart=/usr/bin/python3 /home/joshua/Projects/thundermax-assistant/src/webui_server.py --host 0.0.0.0 --port 8181
+Environment=TMAX_TUNES_DIR=/home/joshua/tmax-exchange/tunes-from-usb-2026-08-19
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

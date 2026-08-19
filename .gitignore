@@ -1,6 +1,12 @@
 __pycache__/
 *.pyc
 *.tbw
+data/tune_cache/
+data/diff_cache/
+data/tune_index.json
+data/sessions/
+data/journal/
+data/proposals/
 
 # Claude Code worktrees (other sessions) — never commit into this repo
 .claude/worktrees/

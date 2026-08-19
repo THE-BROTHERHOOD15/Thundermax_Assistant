@@ -1,13 +1,21 @@
 {
   "setup_key": "m8-131-lrst-2into1-tbw",
-  "label": "2023 Harley-Davidson Low Rider ST — M8 131ci, 2-into-1, ThunderMax TBW",
+  "label": "2023 Harley-Davidson Low Rider ST — M8 131ci, S&S 550 / CAM2, 6.3 injectors, 2-into-1, ThunderMax TBW",
   "model": "2023 Low Rider ST (FXLRST)",
   "engine": "Milwaukee-Eight 131ci",
+  "cam": "S&S 550 (CAM2). Prior lineage: SE8-517.",
+  "injectors": "6.3 (current). NEVER flash a 5.5-injector / *55inj* map onto 6.3s.",
   "exhaust": "2-into-1",
   "ecm": "ThunderMax TBW (throttle-by-wire)",
   "base_map_ids": [
-    "ZZSSQXETDN100720",
-    "HYSSPVCAHN051320"
+    "HXSSEDCAAN061617",
+    "HYSSPVCAHN051320",
+    "ZZSSQXETDN100720"
   ],
-  "notes": "Default setup for this assistant. A .tbw whose base-map ID is listed here (or added by 'tmax sync') is treated as MY setup, so its tune data is folded into the knowledge base to keep tuning advice current. base_map_ids grows automatically as sync finds matching tunes. For a different bike, describe it in the question or pass --setup; this profile stays as the default."
+  "current_flash_file": "M8_131_550CAM_63inj.tbw",
+  "current_working_pair": [
+    "M8_131_CAM2_63inj fuelmoto origional.tbw",
+    "auto tune run from ch home 330 345 degrees f head temp.tbw"
+  ],
+  "notes": "Current hardware (USB TMAX 2026-08-19 + Desktop save): 6.3 injectors, S&S 550 / CAM2, FuelMoto lineage, base-map HXSSEDCAAN061617. 17AUG2025ATLRUNNINGGREATv6TODAY.tbw is SE8-517 history — v6 means version 6, NOT 6.3 injectors; do not flash it onto 6.3s. A .tbw whose base-map ID is listed here is treated as MY setup for sync/learn. base_map_ids grows as sync finds matching tunes."
 }

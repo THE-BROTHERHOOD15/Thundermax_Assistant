@@ -7,6 +7,12 @@ with a local LLM grounded in the shop's own tuning docs.
 **Start with [COLLABORATION.md](COLLABORATION.md)** — it's the primary
 coordination doc (project state, format knowledge, house tuning rules).
 
+**Command Center (shop UI):** http://192.168.1.201:8181/  
+Dashboard · co-pilot · tune library · journal · proposals · virtual dyno.  
+Never writes `.tbw`. Guardrails hard-block unsafe proposals. USB 2026-08-19
+house rules (no 17AUG onto 6.3s; no locking 330–345°F AutoTune trims) are
+wired in. `:8090` is AI Operator — do not use it for this app.
+
 ## Quick start
 
 Everything runs through one command — `./tmax` (starts Ollama automatically
@@ -48,10 +54,13 @@ when a command needs it):
     writes `.tbw`). New matching base-map IDs are remembered in the profile.
 - `src/bike_profile.json` — your default setup (2023 Low Rider ST, M8 131ci,
   2-into-1, ThunderMax TBW) and the base-map IDs that count as "my setup".
-- `src/api_server.py` — HTTP API (stdlib, CORS, NDJSON token streaming) that
-  exposes ask/chat/analyze/learn/sync for a web frontend. Runs as the
-  **`tmax-api`** systemd service on `:8181` (LAN + Tailscale only). Full contract
-  and a copy-paste streaming `fetch()` example are in **[API.md](API.md)**.
+- `src/webui_server.py` + `src/webui_core.py` + `web/` — **TMax Command Center**
+  shop UI (dashboard, co-pilot, tune library, journal, proposals, virtual dyno).
+  Guardrails in `src/guardrails.py` hard-block unsafe proposals. Never writes
+  `.tbw`. Runs as **`tmax-api`** on `:8181` (`0.0.0.0`, LAN + Tailscale).
+  `:8090` is AI Operator — do not steal it.
+- `src/api_server.py` — legacy NDJSON API (ask/chat/analyze/learn/sync). The
+  Command Center keeps those endpoints for compatibility. Contract: **[API.md](API.md)**.
 - `tests/` — self-contained unit tests (synthetic tunes; no NAS/Ollama needed)
 - `reports/` — generated decode reports and tune indexes
 - `COLLABORATION.md` — primary path: project state and format knowledge

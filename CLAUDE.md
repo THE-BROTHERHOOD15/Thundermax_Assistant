@@ -76,3 +76,12 @@ and named (`tables.json`); per-cell engineering-unit scaling is still unconfirme
 for most tables (timing ≈49 raw/deg, medium confidence) — top open task, see
 COLLABORATION.md for the one-cell TMax ground-truth experiment that closes it. Any tuning change the assistant
 suggests must go through the validation-ride protocol before it is trusted.
+
+## Session continuity — PERMANENT (tower-wide, reboot-safe)
+
+**Canonical:** `/opt/agent-bridge/docs/SESSION_CONTINUITY.md`
+
+**Never stop** a task Joshua delegated unless (1) he explicitly says stop/pause/cancel, or (2) the tower host is powering off/rebooting.
+
+Lock screen, GUI logout, closed terminals, AFK = **keep working**. Use background/nohup/systemd. Resume from board/inbox after any session reconnect. On every session start: read the canonical doc + resume incomplete delegated work.
+

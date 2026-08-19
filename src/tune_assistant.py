@@ -66,6 +66,21 @@ Harley-Davidson Low Rider ST with a 131ci build running a ThunderMax TBW
 ignition timing, AutoTune gating/zone locking, decel pop fixes, and
 validation-ride protocol.
 
+MUST / MUST NOT (shop-critical — answer these first, do not hedge):
+- Current hardware: 6.3 injectors, S&S 550 / CAM2, FuelMoto lineage,
+  base-map HXSSEDCAAN061617. ThunderMax TBW only.
+- Do NOT flash 17AUG2025ATLRUNNINGGREATv6TODAY.tbw onto the current bike.
+  That file is SE8-517 history. v6 means version 6, NOT 6.3 injectors.
+  If TMax shows injector size 5.5, do not WRITE it onto 6.3s. Never flash
+  any *55inj* file onto 6.3 injectors.
+- Flash-first file: M8_131_550CAM_63inj.tbw. Confirm 6.3, idle 1024, decel
+  cut OFF, AutoTune OFF. After WRITE: initialize if asked, hands off
+  throttle, one start no throttle, both pipes hot in 30 seconds or shut off.
+- Do NOT lock or trust AutoTune trims from
+  "auto tune run from ch home 330 345 degrees f head temp.tbw".
+  330-345F CHT is above the 280F disable gate (heat-soak). Need a cooler
+  validation ride in the 200-280F window first.
+
 House rules learned from this shop's tuning history:
 - AutoTune learning gates: enable above 200F, disable above 280F; cold-start
   and heat-soak trims are garbage and must be blocked.
@@ -165,45 +180,46 @@ COMPETITOR_TERMS = ("power vision", "powervision", "power-vision", "dynojet",
                     "power commander", "powercommander", "pv1", "pv-1", "pv3", "pv-3")
 
 
+def scored_passages(question, profile=None):
+    """Score corpus passages against a question; return [(score, docname,
+    passage)] best-first. Extracted so the Command Center can merge retrievers.
+    `profile` defaults to the module-level PROFILE (CLI unchanged)."""
+    words = {w for w in re.findall(r"[a-z0-9]{3,}", question.lower())
+             if w not in STOPWORDS}
+    if not words:
+        return []
+    scored = []
+    setup_key = (profile if profile is not None else PROFILE).get("setup_key", "")
+    for doc in find_docs():
+        try:
+            text = doc.read_text(errors="replace")
+        except OSError:
+            continue
+        learned = "_learned_" in doc.name
+        mine = learned and bool(setup_key) and setup_key in doc.name
+        boost = 1.6 if mine else (1.3 if learned else 1.0)
+        for passage in _passages(text):
+            body = passage.lower()
+            hits = sum(body.count(w) + (body.count(w[:-1]) if w.endswith("s") else 0)
+                       for w in words)
+            if not hits:
+                continue
+            distinct = sum(1 for w in words if w in body)
+            score = (distinct * 10 + hits) * boost
+            if any(term in body for term in COMPETITOR_TERMS):
+                score *= 0.15
+            scored.append((score, doc.name, passage.strip()))
+    scored.sort(key=lambda s: s[0], reverse=True)
+    return scored
+
+
 def relevant_context(question, budget=MAX_CONTEXT_CHARS):
     """Chunk-level retrieval: score individual passages by keyword overlap and
     pack the best excerpts first. Rewarding breadth of match (how many distinct
     query terms a passage touches) keeps an on-topic paragraph ahead of a doc
     that merely repeats one common word (e.g. 'rpm') many times - the failure
     that let a surge question pull generic timing pages instead of the answer."""
-    words = {w for w in re.findall(r"[a-z]{3,}", question.lower())
-             if w not in STOPWORDS}
-    if not words:
-        return ""
-    scored = []
-    setup_key = PROFILE.get("setup_key", "")
-    for doc in find_docs():
-        try:
-            text = doc.read_text(errors="replace")
-        except OSError:
-            continue
-        # boost knowledge learned for THIS setup so newly-synced tunes and notes
-        # for my bike surface ahead of generic manual pages
-        learned = "_learned_" in doc.name
-        mine = learned and bool(setup_key) and setup_key in doc.name
-        boost = 1.6 if mine else (1.3 if learned else 1.0)
-        for passage in _passages(text):
-            body = passage.lower()
-            # singular fallback so "soaks" still hits a passage that says "soak"
-            hits = sum(body.count(w) + (body.count(w[:-1]) if w.endswith("s") else 0)
-                       for w in words)
-            if not hits:
-                continue
-            distinct = sum(1 for w in words if w in body)
-            # breadth dominates raw frequency: a passage covering many of the
-            # question's terms beats one spamming a single common term
-            score = (distinct * 10 + hits) * boost
-            # down-rank competing-tuner content (Power Vision / Dynojet / Power
-            # Commander) so it never becomes the grounding for a ThunderMax answer
-            if any(term in body for term in COMPETITOR_TERMS):
-                score *= 0.15
-            scored.append((score, doc.name, passage.strip()))
-    scored.sort(key=lambda s: s[0], reverse=True)
+    scored = scored_passages(question)
     parts, used, seen = [], 0, set()
     for _, name, passage in scored:
         key = (name, passage[:80])
@@ -314,22 +330,75 @@ def announce(model):
     sys.stderr.flush()
 
 
+HOUSE_CARD = """\
+SHOP FACTS — if these answer the question, stop; do not invent a flash procedure.
+1. Current bike is 6.3 injectors / S&S 550 / CAM2 / HXSSEDCAAN061617.
+2. NO: do not flash 17AUG2025ATLRUNNINGGREATv6TODAY.tbw (SE8-517; v6 = version 6, not 6.3 injectors). If TMax shows 5.5, do not WRITE it onto 6.3s. No *55inj* file onto 6.3s.
+3. Flash-first file: M8_131_550CAM_63inj.tbw (confirm 6.3, idle 1024, decel cut OFF, AutoTune OFF).
+4. NO: do not lock/trust AutoTune trims from the CH-home file named 330-345F head temp. 330-345F is above the 280F disable gate (heat-soak). Cooler 200-280F ride first.
+"""
+
+
 def build_messages(question, extra_context=""):
     context = relevant_context(question)
     user = question
     blocks = [b for b in (extra_context, context) if b]
+    body = f"{HOUSE_CARD}\nQuestion: {question}"
     if blocks:
-        user = (
-            "Reference material:\n\n" + "\n\n".join(blocks) +
-            f"\n\nQuestion: {question}"
+        body = (
+            f"{HOUSE_CARD}\nReference material:\n\n"
+            + "\n\n".join(blocks)
+            + f"\n\nQuestion: {question}"
         )
     return [
         {"role": "system", "content": SYSTEM_PROMPT},
-        {"role": "user", "content": user},
+        {"role": "user", "content": body},
     ]
 
 
+def shop_override(question):
+    """Hard answers for brick-the-bike facts taught from the 2026-08-19 USB pull.
+
+    The fast coder model will invent flash/lock procedures even when the
+    system prompt says no. These two facts must not depend on it.
+    """
+    ql = question.lower()
+    bits = []
+    flash_ask = any(s in ql for s in (
+        "17aug", "runninggreat", "running great", "55inj", "5.5 inj",
+        "5.5 injector", "se8-517", "se8 517"))
+    inj_ask = "6.3" in ql or "63inj" in ql or "injector" in ql
+    if flash_ask or (inj_ask and "flash" in ql and ("17" in ql or "aug" in ql or "v6" in ql)):
+        bits.append(
+            "NO. Do not flash 17AUG2025ATLRUNNINGGREATv6TODAY.tbw onto the "
+            "current 6.3 injector bike. That file is SE8-517 history. "
+            "v6 means version 6, NOT 6.3 injectors. If TMax shows injector "
+            "size 5.5, do not WRITE it onto 6.3s. Never flash a *55inj* file "
+            "onto 6.3s. Flash-first file: M8_131_550CAM_63inj.tbw (confirm "
+            "6.3, idle 1024, decel cut OFF, AutoTune OFF). After WRITE: "
+            "initialize if asked, hands off throttle, one start no throttle, "
+            "both pipes hot in 30 seconds or shut off."
+        )
+    heat = ("330" in ql or "345" in ql or "ch-home" in ql or "ch home" in ql)
+    autotune_lock = any(s in ql for s in ("autotune", "auto tune", "trim", "lock"))
+    if heat and autotune_lock:
+        bits.append(
+            "NO. Do not lock or trust the CH-home AutoTune trims "
+            "(file: auto tune run from ch home 330 345 degrees f head temp.tbw). "
+            "330–345°F CHT is above the shop 280°F AutoTune disable gate — "
+            "heat-soak trims are garbage. Need a cooler validation ride in "
+            "the 200–280°F window, logging TPS, RPM, AFR target vs actual, "
+            "CHT, and trims. The FuelMoto original → CH-home diff is "
+            "AutoTune/learned-VE only, not a new spark or AFR-target strategy."
+        )
+    return "\n\n".join(bits) if bits else None
+
+
 def cmd_ask(args):
+    override = shop_override(args.question)
+    if override:
+        print(override)
+        return
     model = resolve_model(args, args.question)
     announce(model)
     ollama_chat(build_messages(args.question), model=model)
@@ -471,9 +540,10 @@ def cmd_learn(args):
     return 0
 
 
-def _tune_doc(t, path, baseline=None):
+def _tune_doc(t, path, baseline=None, profile=None):
     """Summarize a matching tune into a knowledge doc (decoded facts, no raw
     dump). Includes a classified diff vs a baseline when one is given."""
+    setup = (profile if profile is not None else PROFILE).get("setup_key")
     lines = [f"Tune file: {path.name}", f"Base map ID: {t.base_map_id}",
              f"Valid: {t.valid}"]
     lines += list(t.integrity_lines())
@@ -486,7 +556,7 @@ def _tune_doc(t, path, baseline=None):
             "so it is folded into the knowledge base to keep tuning advice current "
             "for this bike.\n\n" + "\n".join(lines))
     return learn_write(f"tune {path.stem} ({t.base_map_id})", body,
-                       source=str(path), setup=PROFILE.get("setup_key"))
+                       source=str(path), setup=setup)
 
 
 def sync_folder(path, baseline=None):

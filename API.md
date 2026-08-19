@@ -1,46 +1,53 @@
 # ThunderMax Assistant — Frontend API
 
-The tuning assistant (model auto-routing + RAG grounding + learn/sync) is served
-over HTTP by `src/api_server.py`, running as the **`tmax-api`** systemd service.
-No pip deps; CORS is open so a browser app can call it directly.
+The live shop UI is **TMax Command Center** (`src/webui_server.py` + `web/`),
+served by the **`tmax-api`** systemd unit. Stdlib only. Never writes `.tbw`.
+`:8090` is AI Operator — do not bind this app there.
+
+`src/api_server.py` is the older NDJSON API. Command Center keeps those
+endpoints for compatibility and adds chat sessions, tune library, journal,
+proposals, and virtual dyno.
 
 ## Base URL
 
-Reachable from any device on your LAN or Tailscale (internet is firewalled off):
+Reachable from LAN or Tailscale (internet is firewalled off):
 
 | From | URL |
 |------|-----|
 | the tower itself | `http://127.0.0.1:8181` |
-| Tailscale (any tailnet device) | `http://100.81.182.127:8181` |
-| LAN | `http://192.168.1.245:8181` |
+| LAN | `http://192.168.1.201:8181/` |
 
-### Host the frontend ON the tower (recommended — same-origin, no CORS/CSP)
-
-Drop your built frontend (Fable5 output — `index.html`, JS, CSS, assets) into the
-repo's **`web/`** folder. The API server serves it at the root, same-origin with
-`/api/*`, so the frontend can use a **relative** API base (`""`) and there are no
-cross-origin or CSP issues at all:
-
-```
-web/index.html      ->  http://server-tower:8181/
-web/assets/app.js   ->  http://server-tower:8181/assets/app.js
-```
-
-A working starter chat UI already lives in `web/index.html` (open
-`http://100.81.182.127:8181/`). Replace it with your Fable5 build; unknown routes
-fall back to `index.html` for client-side routing. After changing files under
-`web/`, no restart is needed (static files are read per request); after editing
-`src/`, `sudo systemctl restart tmax-api`.
+The SPA is served same-origin from `web/` (`index.html`, `web/css/`, `web/js/`).
+Use a relative API base (`""`). After changing files under `web/`, no restart
+is needed (static files are read per request); after editing `src/`,
+`sudo systemctl restart tmax-api`.
 
 > A **claude.ai Artifact** frontend can't reach the tower (sandbox CSP blocks
 > external hosts) — hosting it here on the tower sidesteps that entirely.
 
-## Endpoints
+## Command Center endpoints
+
+| Method | Path | Returns |
+|--------|------|---------|
+| GET  | `/api/health` | models, profile, ollama/ES status |
+| GET  | `/api/profile` | bike-setup profile |
+| POST | `/api/chat/messages` | start a chat turn |
+| GET  | `/api/chat/stream/{id}` | **SSE** tokens |
+| GET  | `/api/tunes` | library (USB + Desktop + NAS) |
+| GET  | `/api/tunes/diff` | visual/table-classified diff |
+| GET/POST | `/api/journal` | shop notes |
+| GET/POST | `/api/proposals` | proposed edits |
+| POST | `/api/proposals/{id}/vet` | `guardrails.py` verdict |
+| GET  | `/api/dyno` | house-limit virtual dyno (not live ECU) |
+
+Brick-the-bike shop facts (`shop_override`) short-circuit the LLM: never flash
+`17AUG…v6TODAY` onto 6.3 injectors; do not lock 330–345°F CH-home AutoTune
+trims (above the 280°F gate).
+
+## Legacy NDJSON endpoints (still served)
 
 | Method | Path | Body | Returns |
 |--------|------|------|---------|
-| GET  | `/api/health`  | — | `{ok, models:{fast,deep}, profile, modes}` |
-| GET  | `/api/profile` | — | the bike-setup profile |
 | POST | `/api/ask`     | `{question, mode?}` | **NDJSON stream** |
 | POST | `/api/chat`    | `{messages:[{role,content}], mode?}` | **NDJSON stream** |
 | POST | `/api/analyze` | `{file, baseline?, mode?}` | **NDJSON stream** |
@@ -69,7 +76,7 @@ Show a ⚡ (fast) or 🧠 (deep) badge from the first `model` line, append each
 ## Copy-paste: streaming ask (works with POST + fetch)
 
 ```js
-const API = "http://100.81.182.127:8181";      // or 127.0.0.1 on the tower
+const API = "http://192.168.1.201:8181";      // or 127.0.0.1 on the tower
 
 async function ask(question, { mode = "auto", onModel, onToken, onDone } = {}) {
   const res = await fetch(`${API}/api/ask`, {

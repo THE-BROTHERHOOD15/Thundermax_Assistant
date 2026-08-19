@@ -40,6 +40,7 @@ LABELED_PAIRS = [
 ]
 
 EXPECTED_SIZE = 214470
+KNOWN_SIZES = frozenset({214470, 214967, 225718, 225990})
 METADATA_BOUNDARY = 0x3C0
 
 
@@ -62,9 +63,9 @@ def band_for_offset(offset, tables):
 
 def _read(path):
     data = Path(path).read_bytes()
-    if len(data) != EXPECTED_SIZE:
+    if len(data) not in KNOWN_SIZES:
         print(f"warning: {Path(path).name} is {len(data)} bytes "
-              f"(expected {EXPECTED_SIZE})", file=sys.stderr)
+              f"(known sizes: {sorted(KNOWN_SIZES)})", file=sys.stderr)
     return data
 
 

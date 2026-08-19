@@ -29,7 +29,9 @@ A local tuning assistant for Joshua's **2023 Harley-Davidson Low Rider ST,
 
 | What | Where |
 |---|---|
-| Tune files (`.tbw`, ~30) | `/mnt/nas/ADMIN/LOCAL NAS/THROTTLE LOGIC/` |
+| Tune files (`.tbw`, ~30) | `/mnt/nas/ADMIN/LOCAL NAS/THROTTLE LOGIC/` (NAS not writable from tower user) |
+| USB TMAX pull 2026-08-19 | `/home/joshua/tmax-exchange/tunes-from-usb-2026-08-19/` (read-only copies) |
+| Latest pair (Desktop) | `/home/joshua/Desktop/M8_131_CAM2_63inj fuelmoto origional.tbw` + `auto tune run from ch home 330 345 degrees f head temp.tbw` |
 | Tuning manuals & guides | `/mnt/nas/ADMIN/LOCAL NAS/THROTTLE LOGIC/TMAX TUNING MANUAL/` |
 | AI project docs (ride packet, tune card, templates) | `/mnt/nas/ADMIN/LOCAL NAS/NEWER IPAD 16SEP2025/Thundermax AI Project/` |
 | Searchable markdown corpus (37+ docs) | `/mnt/nas/ADMIN/brain_vault/` (files matching `*thundermax*` / `*thunder_max*`) |
@@ -37,7 +39,9 @@ A local tuning assistant for Joshua's **2023 Harley-Davidson Low Rider ST,
 
 ## TBW format — what we know so far
 
-- All observed files are exactly **214470 bytes**.
+- Observed sizes: **214470** (classic TBW, header `0x87/0x147`), **214967**
+  (2026 FuelMoto 6.3/CAM2 pair, header `0x8B/0x148`), **225718** (S&S 550 /
+  6.3 flash file, header `0x84/0x143`), **225990** (other 131/550 hunt maps).
 - Header: four LE u32 at 0x00 (`0x87, 0x4000, 0x1, 0x147` in every sample).
 - **Base-map ID** at `0x10`: one length byte (0x10=16) + 16 ASCII chars
   (e.g. `HYSSPVCAHN051320`, `HXSSEDCAAN06161…`, `ZZSSQXETDN100720`).
@@ -68,6 +72,18 @@ A local tuning assistant for Joshua's **2023 Harley-Davidson Low Rider ST,
 
 - AutoTune learning gates: **enable >200°F, disable >280°F**; cold-start and
   heat-soak trims are garbage — block them.
+- **Current hardware (2026-08-19 USB TMAX + Desktop save):** 6.3 injectors,
+  S&S 550 / CAM2, FuelMoto lineage, base-map `HXSSEDCAAN061617`.
+- **Injector mismatch is a brick-the-fueling risk.** Never flash a 5.5 /
+  `*55inj*` map onto 6.3 injectors. `17AUG2025ATLRUNNINGGREATv6TODAY.tbw`
+  is SE8-517 history — **v6 = version 6, not 6.3 injectors**. Read injector
+  size in TMax before WRITE; if it says 5.5, do not flash it onto 6.3s.
+- Flash-first file: `M8_131_550CAM_63inj.tbw`. Confirm injector size 6.3,
+  idle 1024, decel cut OFF, AutoTune OFF. After WRITE: initialize if asked,
+  hands off throttle; one start, no throttle; both pipes hot in 30 seconds
+  or shut off.
+- CH-home autotune file claims **330–345°F CHT** — above the 280°F disable
+  gate. Treat those learned trims as suspect heat-soak, not trusted VE.
 - Decel pop protocol: closed-throttle 4000→2000 rpm decels in 3rd/4th.
   Pops above 4k → **+2% VE @ 0–2% TPS, 3840–4608 rpm**. Broad-range pops →
   **−1° spark @ 0–2% TPS, 2048–2816 rpm**.
@@ -91,6 +107,44 @@ gracefully if `tables.json` is absent). Confidence tiers: **high** = band
 isolated cleanly to one intent across independent pairs; **medium** =
 one-sided evidence; **low** = churns on every edit (autotune/checksum). Treat
 medium/low bands as *located but not cell-accurate*.
+
+## Current state (2026-08-19) — TMax Command Center GOAL
+
+**Product UI:** TMax Command Center (`src/webui_server.py`) on **:8181**
+(LAN). Phases 1–7 landed on main. Never writes `.tbw`. Guardrails are the
+only hard-block. USB 2026-08-19 shop facts (`shop_override`) apply in CLI
+and co-pilot. Tune library reads `~/tmax-exchange/tunes-from-usb-2026-08-19`
++ Desktop (NAS optional). `:8090` is AI Operator — do not steal.
+
+- [x] Phase 1–3: dashboard, streaming chat, tune library + visual diff
+- [x] Phase 4: journal + learned KB
+- [x] Phase 5: proposals + deterministic vetting (`guardrails.py`)
+- [x] Phase 6: virtual dyno gauges (house-limit model, not live ECU)
+- [x] Phase 7: systemd `tmax-api` serves Command Center on :8181
+
+## Prior USB pull (2026-08-19)
+
+- [x] **USB TMAX pull** — remounted `/dev/sdb1` (label TMAX) as joshua at
+      `/run/media/joshua/TMAX`; copied 4 `.tbw` + `READ_ME_FIRST.txt` to
+      `~/tmax-exchange/tunes-from-usb-2026-08-19/` (sha256 verified). Joshua
+      also saved the two newest maps to Desktop (byte-identical to the USB
+      copies). NAS THROTTLE LOGIC is not writable from this seat.
+- [x] New working pair (both `HXSSEDCAAN061617`, 214967 bytes, header
+      `0x8B/0x148`): FuelMoto original vs CH-home autotune. Classified
+      diff is AutoTune/learned-VE trims only (no timing/AFR-target rewrite).
+      Filename CHT 330–345°F is above the 280°F AutoTune disable gate.
+- [x] `M8_131_550CAM_63inj.tbw` (225718, same bytes as Desktop
+      `131-SS-550-fuel-maps/M8_131_CAM2_63inj.tbw`) is the READ_ME flash-first
+      6.3 / S&S 550 file.
+- [x] `17AUG2025ATLRUNNINGGREATv6TODAY.tbw` kept as SE8-517 history
+      (`ZZSSQXETDN100720`, classic 214470).
+- [x] Assistant taught: house-rule injector/flash protocol + heat-soak
+      warning + `tmax sync` of the USB archive + Desktop pair. `tmax learn`
+      / `tmax sync` wired into the unified CLI. Parser accepts known sizes
+      `{214470, 214967, 225718, 225990}`. Brick-the-bike facts
+      (no 17AUG onto 6.3s; no locking 330–345°F AutoTune trims) are
+      `shop_override()` answers so the fast model cannot invent a flash
+      procedure.
 
 ## Current state (2026-07-12)
 

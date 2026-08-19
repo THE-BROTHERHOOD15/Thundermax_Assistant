@@ -16,6 +16,8 @@
 #     tmax ask "question"
 #     tmax chat
 #     tmax analyze <new.tbw> [--baseline old.tbw]
+#     tmax learn "note" | --file X      add knowledge to the KB
+#     tmax sync <folder>                fold matching .tbw tunes into the KB
 #
 #   Housekeeping:
 #     tmax verify                       run the self-check suite
@@ -57,6 +59,9 @@ case "$cmd" in
   ask|chat|analyze)
     mkdir -p "$HOME/.local/state"
     ensure_ollama || exit 1
+    exec python3 "$SRC/tune_assistant.py" "$cmd" "$@" ;;
+  learn|sync)
+    # read-only on .tbw; no Ollama required
     exec python3 "$SRC/tune_assistant.py" "$cmd" "$@" ;;
   verify)
     exec "$ROOT/scripts/verify.sh" ;;
