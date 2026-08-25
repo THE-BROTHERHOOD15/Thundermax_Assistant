@@ -1,0 +1,545 @@
+{
+  "nodes": [
+    {
+      "id": "2354cd7bacf12251",
+      "type": "group",
+      "x": -40,
+      "y": 140,
+      "width": 440,
+      "height": 540,
+      "label": "HARDWARE CONFLICT \u2014 do not flatten",
+      "color": "1"
+    },
+    {
+      "id": "566110891092ed42",
+      "type": "group",
+      "x": 440,
+      "y": 140,
+      "width": 1180,
+      "height": 540,
+      "label": "LIVE PEAK \u2014 USB 2026-08-19 / shop fact",
+      "color": "4"
+    },
+    {
+      "id": "32e182bcfa046a8b",
+      "type": "group",
+      "x": 1660,
+      "y": 140,
+      "width": 500,
+      "height": 540,
+      "label": "TOWER ASSISTANT",
+      "color": "5"
+    },
+    {
+      "id": "2cdc5a9e649a68ba",
+      "type": "group",
+      "x": -40,
+      "y": 720,
+      "width": 440,
+      "height": 500,
+      "label": "BRICK-THE-BIKE RULES",
+      "color": "1"
+    },
+    {
+      "id": "6691bd0a79097441",
+      "type": "group",
+      "x": 440,
+      "y": 720,
+      "width": 1180,
+      "height": 500,
+      "label": "MAR 30 SESSION \u2014 launch bog intel",
+      "color": "2"
+    },
+    {
+      "id": "8d2fcd7185b267e7",
+      "type": "group",
+      "x": 1660,
+      "y": 720,
+      "width": 500,
+      "height": 500,
+      "label": "CHASSIS / FAB",
+      "color": "3"
+    },
+    {
+      "id": "4bf7bf8a4b82c760",
+      "type": "group",
+      "x": 440,
+      "y": 1260,
+      "width": 1720,
+      "height": 420,
+      "label": "CORPUS \u2014 manuals / AutoTune / timing (iCloud dumps)",
+      "color": "6"
+    },
+    {
+      "id": "7cf9e528590cb428",
+      "type": "text",
+      "x": 440,
+      "y": -80,
+      "width": 1180,
+      "height": 180,
+      "text": "# ThunderMax topo\n\nNative Obsidian map of ThunderMax intel. **Green = live shop fact.** Red = conflict or brick-the-bike. Orange = Mar 30 ChatGPT session. Cyan = tower. Yellow = fab. Purple = library.\n\nHub notes: [[thundermax_command_center_2026-08-19]] \u00b7 [[chatgpt_shares]] \u00b7 [[user_bike]]",
+      "color": "4"
+    },
+    {
+      "id": "1104f9207e33df2a",
+      "type": "text",
+      "x": -40,
+      "y": -80,
+      "width": 440,
+      "height": 180,
+      "text": "## Legend\n\n4 green \u2014 live / flash this\n1 red \u2014 conflict or do-not\n2 orange \u2014 rider session\n5 cyan \u2014 Command Center\n3 yellow \u2014 saddlebag brace\n6 purple \u2014 old manuals",
+      "color": "6"
+    },
+    {
+      "id": "d0701ce2b375b376",
+      "type": "file",
+      "x": -20,
+      "y": 190,
+      "width": 400,
+      "height": 240,
+      "file": "brain/user_bike.md",
+      "color": "1"
+    },
+    {
+      "id": "06dfcb59015297cf",
+      "type": "text",
+      "x": -20,
+      "y": 450,
+      "width": 400,
+      "height": 200,
+      "text": "## Injector timeline\n\n`user_bike` \u2192 **5.5 g/s** + SE 475\nMar 30 ChatGPT \u2192 **\"68 injectors\"** + shorty\nUSB Aug 19 \u2192 **6.3** + S&S 550 + 2-into-1\n\n**Live flash = 6.3.** Never `*55inj*` onto 6.3s.",
+      "color": "1"
+    },
+    {
+      "id": "79f0411b0e424f78",
+      "type": "file",
+      "x": 470,
+      "y": 190,
+      "width": 420,
+      "height": 240,
+      "file": "brain/thundermax_command_center_2026-08-19.md",
+      "color": "4"
+    },
+    {
+      "id": "70300cfd579ae741",
+      "type": "text",
+      "x": 910,
+      "y": 190,
+      "width": 340,
+      "height": 240,
+      "text": "## Live hardware\n\n- 6.3 injectors\n- S&S 550 / CAM2\n- FuelMoto lineage\n- Exhaust **2-into-1**\n- Idle 1024\n- Decel cut OFF\n- AutoTune OFF at flash",
+      "color": "4"
+    },
+    {
+      "id": "3ecba8df43a71d01",
+      "type": "text",
+      "x": 1270,
+      "y": 190,
+      "width": 320,
+      "height": 240,
+      "text": "## Flash-first\n\n`M8_131_550CAM_63inj.tbw`\n\nConfirm injector size **6.3** before WRITE.\nAfter WRITE: init if asked, hands off throttle, one start, both pipes hot in 30s or shut off.",
+      "color": "4"
+    },
+    {
+      "id": "8098dc9a98c8352e",
+      "type": "text",
+      "x": 470,
+      "y": 450,
+      "width": 1120,
+      "height": 200,
+      "text": "## Shared fingerprint\n\nBase-map **HXSSEDCAAN061617** \u2014 on `user_bike` *and* the live ThunderMax profile.\n\n`17AUG2025ATLRUNNINGGREATv6TODAY.tbw` = SE8-517 history. **v6 = version 6, not 6.3 injectors.** If TMax says 5.5, do not flash it onto 6.3s.",
+      "color": "4"
+    },
+    {
+      "id": "e8b813abb5dcfd53",
+      "type": "text",
+      "x": 1680,
+      "y": 190,
+      "width": 460,
+      "height": 140,
+      "text": "## Command Center\n\nhttp://192.168.1.201:8181/\n\n`:8090` is AI Operator \u2014 do not steal it.\n`tmax-api` \u2192 `webui_server.py`",
+      "color": "5"
+    },
+    {
+      "id": "d1a61e361f7a2c64",
+      "type": "link",
+      "x": 1680,
+      "y": 350,
+      "width": 460,
+      "height": 120,
+      "url": "https://github.com/joshtitan88-collab/Thundermax_Assistant",
+      "color": "5"
+    },
+    {
+      "id": "29bd55b844134f2b",
+      "type": "text",
+      "x": 1680,
+      "y": 490,
+      "width": 460,
+      "height": 160,
+      "text": "## Hard no\n\nNever write `.tbw`. Flash in TMax Tuner on Windows.\nSpark \u00b12\u00b0/step. VE \u00b15%. No rear-timing-advance.\nVirtual dyno = house-limit model, not live ECU.",
+      "color": "1"
+    },
+    {
+      "id": "093896d9520e4fe3",
+      "type": "file",
+      "x": -20,
+      "y": 770,
+      "width": 400,
+      "height": 180,
+      "file": "brain/thundermax_usb_tmax_flash_rules_6-3_vs_55inj_2026-08-19.md",
+      "color": "1"
+    },
+    {
+      "id": "6a0cb95a41e67342",
+      "type": "file",
+      "x": -20,
+      "y": 970,
+      "width": 400,
+      "height": 180,
+      "file": "brain/thundermax_ch_home_autotune_330-345f_above_280f_gate_2026-08-19.md",
+      "color": "1"
+    },
+    {
+      "id": "62b5cd4f5188b4f5",
+      "type": "file",
+      "x": 470,
+      "y": 770,
+      "width": 400,
+      "height": 200,
+      "file": "brain/thundermax_chatgpt_share_2026-03-30_lowrider-st-131.md",
+      "color": "2"
+    },
+    {
+      "id": "965afb49d3363b6f",
+      "type": "file",
+      "x": 890,
+      "y": 770,
+      "width": 400,
+      "height": 200,
+      "file": "brain/thundermax_chatgpt_share_2026-03-30_transcript.md",
+      "color": "2"
+    },
+    {
+      "id": "100bea81fa94002c",
+      "type": "text",
+      "x": 1310,
+      "y": 770,
+      "width": 280,
+      "height": 200,
+      "text": "## Rider feel\n\nWeak bottom end.\nFrom a stop: dives / falls on its nose, then picks up.\n\n**Tune first:** idle\u20132500, 0\u201320% TPS.",
+      "color": "2"
+    },
+    {
+      "id": "61ee9c1fe55ae863",
+      "type": "text",
+      "x": 470,
+      "y": 990,
+      "width": 1120,
+      "height": 200,
+      "text": "## Session numbers (Joshua-corrected)\n\nPeak timing **32\u00b0 at 5,632 RPM** (ChatGPT first said 51,200).\nAFR vs TPS ~3840 RPM started **~15.0 at low TPS** \u2192 12.5\u201312.8 WOT.\nAFR-vs-temp **1.5 is an OFFSET, not AFR 1.5:1.** AutoTune looked off.\n\nTaught to tower KB 2026-08-25 via `tmax learn`. Share: https://chatgpt.com/share/6a8d5426-8c60-83e9-bb39-138482c63f9c",
+      "color": "2"
+    },
+    {
+      "id": "73f2d9759db5559e",
+      "type": "file",
+      "x": 1680,
+      "y": 770,
+      "width": 460,
+      "height": 180,
+      "file": "brain/chatgpt_share_2026-08-07_saddlebag-brace-project-plan.md",
+      "color": "3"
+    },
+    {
+      "id": "ffd77bdaf90023f2",
+      "type": "file",
+      "x": 1680,
+      "y": 970,
+      "width": 460,
+      "height": 180,
+      "file": "brain/icloud_projects_38__hole_diameter_harley_docking_hardware_-_google_search_pdf_7409f5.md",
+      "color": "3"
+    },
+    {
+      "id": "a7966e420f5af5eb",
+      "type": "file",
+      "x": 470,
+      "y": 1310,
+      "width": 380,
+      "height": 140,
+      "file": "brain/icloud_thundermax_ai_project_2025-08-30_autotune_gating_tunecard_pdf_465fb7.md",
+      "color": "6"
+    },
+    {
+      "id": "6c2b91a07401ca25",
+      "type": "file",
+      "x": 870,
+      "y": 1310,
+      "width": 380,
+      "height": 140,
+      "file": "brain/icloud_thunder_max_tuning_thundermax_autotune_zone_lock_complete_guide_2025-08-1_1a0d25.md",
+      "color": "6"
+    },
+    {
+      "id": "1f8394fde14fa3a4",
+      "type": "file",
+      "x": 1270,
+      "y": 1310,
+      "width": 380,
+      "height": 140,
+      "file": "brain/icloud_thunder_max_tuning_thundermax_rear_timing_logic_pdf_b96c1c.md",
+      "color": "6"
+    },
+    {
+      "id": "65d6f9d6a9d0f4ef",
+      "type": "file",
+      "x": 1670,
+      "y": 1310,
+      "width": 460,
+      "height": 140,
+      "file": "brain/icloud_thunder_max_tuning_thundermax_131ci_flashsheet18augh25_pdf_3e3fe2.md",
+      "color": "6"
+    },
+    {
+      "id": "fb238596db9bcdc4",
+      "type": "file",
+      "x": 470,
+      "y": 1480,
+      "width": 380,
+      "height": 160,
+      "file": "brain/icloud_2023_lowrider_st_upgrades_thundermax_131ci_tune_specsheet_pdf_ef871f.md",
+      "color": "6"
+    },
+    {
+      "id": "0ed0b5a3e5fda336",
+      "type": "file",
+      "x": 870,
+      "y": 1480,
+      "width": 380,
+      "height": 160,
+      "file": "brain/icloud_thunder_max_tuning_510-0575-tappet-cuffs-for-m8-_1__pdf_8500c5.md",
+      "color": "6"
+    },
+    {
+      "id": "05d911323c1d1baa",
+      "type": "file",
+      "x": 1270,
+      "y": 1480,
+      "width": 380,
+      "height": 160,
+      "file": "brain/icloud_thunder_max_tuning_m8_131ci_timing_tables_front_and_rear_pdf_9e7b0b.md",
+      "color": "6"
+    },
+    {
+      "id": "d6295d3cde88e81e",
+      "type": "file",
+      "x": 1670,
+      "y": 1480,
+      "width": 460,
+      "height": 160,
+      "file": "brain/icloud_thundermax_ai_project_2025-08-30_ride_packet_pdf_6192c7.md",
+      "color": "6"
+    }
+  ],
+  "edges": [
+    {
+      "id": "8e2c054707870d27",
+      "fromNode": "d0701ce2b375b376",
+      "toNode": "79f0411b0e424f78",
+      "fromSide": "right",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "same cal ID HXSSEDCAAN061617",
+      "color": "3"
+    },
+    {
+      "id": "54d9877022d6d277",
+      "fromNode": "06dfcb59015297cf",
+      "toNode": "70300cfd579ae741",
+      "fromSide": "right",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "live stick wins",
+      "color": "1"
+    },
+    {
+      "id": "3b224e0c92c57952",
+      "fromNode": "79f0411b0e424f78",
+      "toNode": "70300cfd579ae741",
+      "fromSide": "right",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "shop fact",
+      "color": "4"
+    },
+    {
+      "id": "570575dcbd4f0ce2",
+      "fromNode": "70300cfd579ae741",
+      "toNode": "3ecba8df43a71d01",
+      "fromSide": "right",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "flash this",
+      "color": "4"
+    },
+    {
+      "id": "56eab4e440e5e037",
+      "fromNode": "3ecba8df43a71d01",
+      "toNode": "e8b813abb5dcfd53",
+      "fromSide": "right",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "never write tbw here",
+      "color": "5"
+    },
+    {
+      "id": "13e764c1ae56c3fb",
+      "fromNode": "79f0411b0e424f78",
+      "toNode": "8098dc9a98c8352e",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "color": "4"
+    },
+    {
+      "id": "8e99a7cddea62905",
+      "fromNode": "e8b813abb5dcfd53",
+      "toNode": "d1a61e361f7a2c64",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "repo",
+      "color": "5"
+    },
+    {
+      "id": "e117239e237d204f",
+      "fromNode": "d1a61e361f7a2c64",
+      "toNode": "29bd55b844134f2b",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "guardrails",
+      "color": "1"
+    },
+    {
+      "id": "4475465abeaf49a5",
+      "fromNode": "79f0411b0e424f78",
+      "toNode": "62b5cd4f5188b4f5",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "taught 2026-08-25",
+      "color": "2"
+    },
+    {
+      "id": "a0de4e2bc3a9fd68",
+      "fromNode": "62b5cd4f5188b4f5",
+      "toNode": "965afb49d3363b6f",
+      "fromSide": "right",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "full chat",
+      "color": "2"
+    },
+    {
+      "id": "8b18dd5e7d63f6d7",
+      "fromNode": "965afb49d3363b6f",
+      "toNode": "100bea81fa94002c",
+      "fromSide": "right",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "symptom",
+      "color": "2"
+    },
+    {
+      "id": "dbfd2b92387ded97",
+      "fromNode": "100bea81fa94002c",
+      "toNode": "73f2d9759db5559e",
+      "fromSide": "right",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "same bike",
+      "color": "3"
+    },
+    {
+      "id": "2b6452d282cf176c",
+      "fromNode": "62b5cd4f5188b4f5",
+      "toNode": "61ee9c1fe55ae863",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "corrected numbers",
+      "color": "2"
+    },
+    {
+      "id": "3f94431c00fe4c2d",
+      "fromNode": "093896d9520e4fe3",
+      "toNode": "79f0411b0e424f78",
+      "fromSide": "right",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "6.3 vs 55inj",
+      "color": "1"
+    },
+    {
+      "id": "189352dc411851d9",
+      "fromNode": "6a0cb95a41e67342",
+      "toNode": "61ee9c1fe55ae863",
+      "fromSide": "right",
+      "toSide": "left",
+      "toEnd": "arrow",
+      "label": "200\u2013280\u00b0F / do not lock 330\u2013345",
+      "color": "1"
+    },
+    {
+      "id": "1c4a788677b3af62",
+      "fromNode": "73f2d9759db5559e",
+      "toNode": "ffd77bdaf90023f2",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "3/8 docking",
+      "color": "3"
+    },
+    {
+      "id": "10e6ea63db830f7e",
+      "fromNode": "70300cfd579ae741",
+      "toNode": "a7966e420f5af5eb",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "AutoTune gates",
+      "color": "6"
+    },
+    {
+      "id": "3c087d4dbde1b50e",
+      "fromNode": "29bd55b844134f2b",
+      "toNode": "1f8394fde14fa3a4",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "no rear advance",
+      "color": "1"
+    },
+    {
+      "id": "420a3850a523cce7",
+      "fromNode": "61ee9c1fe55ae863",
+      "toNode": "05d911323c1d1baa",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "32\u00b0 @ 5632 vs tables",
+      "color": "6"
+    },
+    {
+      "id": "91ebc4531b983437",
+      "fromNode": "8098dc9a98c8352e",
+      "toNode": "65d6f9d6a9d0f4ef",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "toEnd": "arrow",
+      "label": "131 flash lineage",
+      "color": "6"
+    }
+  ]
+}

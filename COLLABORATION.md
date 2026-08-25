@@ -189,3 +189,23 @@ matching it to the raw bytes locks both the axis order and the unit scale.
 - Anything the assistant suggests still goes through the validation-ride
   protocol before it's trusted.
 - NAS paths are the source of truth for data; this repo holds code only.
+
+## Update — 2026-08-25 ChatGPT session ingest
+
+Ingested Joshua's ChatGPT share (2026-03-30) into `docs/corpus/` via `tmax learn` and Command Center journal.
+
+- Share: https://chatgpt.com/share/6a8d5426-8c60-83e9-bb39-138482c63f9c
+- Vault: `brain/thundermax_chatgpt_share_2026-03-30_lowrider-st-131.md` + transcript
+- KB: `thundermax_learned_*_chatgpt-2026-03-30-launch-bog-*`
+- Session complaint: launch bog from a stop (dives / falls on its nose) + weak bottom end
+- Corrected screenshot timing: **32° at 5,632 RPM** (ChatGPT first said 51,200)
+- AFR vs TPS ~3840 RPM started ~15.0 at low TPS
+- **AFR-vs-temp 1.5 is an adjustment/offset, not AFR 1.5:1**
+- Session claimed 68 injectors / Two Brothers shorty — **live hardware remains 6.3 / S&S 550 / 2-into-1**
+
+## Update — 2026-08-25 ThunderMax topo map
+
+Native Obsidian canvas of ThunderMax intel (live hardware vs injector conflict vs Mar 30 launch bog vs brick-the-bike rules vs corpus).
+
+- Vault: `brain/thundermax_topo.canvas` + `brain/thundermax_topo.md`
+- This repo: `docs/thundermax_topo.md` + `docs/thundermax_topo.canvas`

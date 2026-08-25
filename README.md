@@ -4,7 +4,9 @@ Local tuning assistant for a 2023 Harley-Davidson Low Rider ST (131ci,
 ThunderMax TBW ECM). Parses `.tbw` tune files and answers tuning questions
 with a local LLM grounded in the shop's own tuning docs.
 
-**Start with [COLLABORATION.md](COLLABORATION.md)** — it's the primary
+**ThunderMax intel topo: [docs/thundermax_topo.md](docs/thundermax_topo.md) (Obsidian canvas in the office vault).
+
+Start with [COLLABORATION.md](COLLABORATION.md)** — it's the primary
 coordination doc (project state, format knowledge, house tuning rules).
 
 **Command Center (shop UI):** http://192.168.1.201:8181/  
