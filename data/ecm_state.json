@@ -1,0 +1,69 @@
+{
+  "schema": 1,
+  "updated_at": "2026-08-30T08:07:53Z",
+  "complaint": null,
+  "on_ecm": {
+    "path": "/home/joshua/tmax-exchange/tunes-from-usb-2026-08-19/TMAX_TUNES/M8_131_550CAM_63inj.tbw",
+    "name": "M8_131_550CAM_63inj.tbw",
+    "sha256": "2893e3f4c759ded5f1e52a19ae7fe38bae0ed71c00c6adca73b329aa34228138",
+    "base_map_id": "HXSSEDCAAN061617",
+    "size": 225718,
+    "header": [
+      "0x84",
+      "0x4000",
+      "0x1",
+      "0x143"
+    ],
+    "valid": true,
+    "as_of": "2026-08-19",
+    "source": "claimed",
+    "confidence": "file-claimed",
+    "note": "USB TMAX stick READ_ME_FIRST + bike_profile current_flash_file. Byte-identical to Desktop/Downloads M8_131_CAM2_63inj.tbw. NOT a live ECM read. Do not treat as verified module contents."
+  },
+  "last_known_good": {
+    "path": "/home/joshua/tmax-exchange/tunes-from-usb-2026-08-19/TMAX_TUNES/M8_131_550CAM_63inj.tbw",
+    "name": "M8_131_550CAM_63inj.tbw",
+    "sha256": "2893e3f4c759ded5f1e52a19ae7fe38bae0ed71c00c6adca73b329aa34228138",
+    "base_map_id": "HXSSEDCAAN061617",
+    "size": 225718,
+    "header": [
+      "0x84",
+      "0x4000",
+      "0x1",
+      "0x143"
+    ],
+    "valid": true,
+    "as_of": "2026-08-19",
+    "source": "claimed",
+    "confidence": "file-claimed",
+    "note": "House flash-first 6.3 / S&S 550 file. Same bytes as on_ecm claim. Not ride-validated in this pointer."
+  },
+  "last_pull": {
+    "path": "/home/joshua/tmax-exchange/tunes-from-usb-2026-08-19/TMAX_TUNES/M8_131_550CAM_63inj.tbw",
+    "name": "M8_131_550CAM_63inj.tbw",
+    "sha256": "2893e3f4c759ded5f1e52a19ae7fe38bae0ed71c00c6adca73b329aa34228138",
+    "base_map_id": "HXSSEDCAAN061617",
+    "size": 225718,
+    "header": [
+      "0x84",
+      "0x4000",
+      "0x1",
+      "0x143"
+    ],
+    "valid": true,
+    "as_of": "2026-08-19",
+    "source": "pull",
+    "confidence": "file-claimed",
+    "note": "Present on the TMAX USB stick 2026-08-19 with FuelMoto original and CH-home autotune. Stick inventory, not confirmed as an ECM dump. NAS currenttune.tbw is a different base map (HYSSPVCAHN051320) \u2014 do not use it as current flash."
+  },
+  "last_bagged": null,
+  "staged_flash": null,
+  "history": [
+    {
+      "at": "2026-08-30T08:10:00Z",
+      "action": "seed",
+      "name": "M8_131_550CAM_63inj.tbw",
+      "sha256": "2893e3f4c759ded5f1e52a19ae7fe38bae0ed71c00c6adca73b329aa34228138"
+    }
+  ]
+}

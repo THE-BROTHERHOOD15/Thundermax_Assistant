@@ -26,6 +26,7 @@ echo
 # 1. Required files
 for f in README.md COLLABORATION.md tmax src/thundermax_parser.py \
          src/tune_assistant.py src/table_map.py src/tables.json \
+         src/ecm_state.py data/ecm_state.json tests/test_ecm_state.py \
          tests/test_thundermax.py; do
   if [ -f "$f" ]; then pass "exists: $f"; else fail "missing: $f"; fi
 done

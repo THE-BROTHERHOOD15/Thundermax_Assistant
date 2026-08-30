@@ -25,6 +25,16 @@ A local tuning assistant for Joshua's **2023 Harley-Davidson Low Rider ST,
 - This codebase was rebuilt from those artifacts on 2026-07-11 by Claude
   (Claude Code), reverse-engineering the TBW format from real tune files.
 
+## ECM pointer (what is claimed on the bike)
+
+Canonical: `data/ecm_state.json`. CLI: `tmax ecm show`. Mirror: `~/tmax-exchange/CURRENT_ECM.json`.
+
+Slots: `on_ecm`, `last_known_good`, `last_pull`. Confidence `file-claimed` means we have **not** read the module. `operator-confirmed-flash` is set only after Joshua says the WRITE happened. NAS `currenttune.tbw` is a different base map (`HYSSPVCAHN051320`) — not current flash.
+
+Seeded 2026-08-30 from USB TMAX `M8_131_550CAM_63inj.tbw` (sha256 `2893e3f4…`, base `HXSSEDCAAN061617`, 225718 bytes) — house flash-first file, **not** a live ECM dump.
+
+Tune loop skill: `thundermax-tune-loop` (complaint + bag + diff + TMax audit + sibling; flash is `tmax ecm stage-flash` then `record-flash`). Ride/log is out of that skill.
+
 ## Where the data lives
 
 | What | Where |
@@ -209,3 +219,19 @@ Native Obsidian canvas of ThunderMax intel (live hardware vs injector conflict v
 
 - Vault: `brain/thundermax_topo.canvas` + `brain/thundermax_topo.md`
 - This repo: `docs/thundermax_topo.md` + `docs/thundermax_topo.canvas`
+
+
+## Update — 2026-08-27 three-layer knowledge base
+
+Folder structure alone does not make retrieval fast. The assistant now has a
+three-layer KB at `~/thundermax-kb` (`src/kb/`, `tmax kb …`):
+
+1. Immutable originals (`01_originals/`, chmod 444 after copy)
+2. SQLite metadata + FTS5 (`database/knowledge.sqlite`)
+3. Hybrid retrieve (metadata filter → FTS5 → optional nomic-embed-text → rerank)
+
+Rules: never edit originals; never overwrite a claim (supersede it); never
+treat an unreadable/encrypted file as known contents; never fabricate map
+cells. Source chain required: answer → claim → chunk → derivative → original.
+House rules seeded as Tier 4 validated claims (AutoTune 200–280°F, no 17AUG
+onto 6.3s, no locking 330–345°F trims, decel-pop protocol).

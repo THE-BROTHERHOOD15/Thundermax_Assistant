@@ -19,6 +19,14 @@
 #     tmax learn "note" | --file X      add knowledge to the KB
 #     tmax sync <folder>                fold matching .tbw tunes into the KB
 #
+#   ECM pointer (claimed what's on the bike — copies files, never hex-edits):
+#     tmax ecm show
+#     tmax ecm bag FILE.tbw
+#     tmax ecm complaint "why we are touching this map"
+#     tmax ecm compare FILE.tbw [--vs last_known_good|on_ecm|last_pull]
+#     tmax ecm stage-flash FILE.tbw
+#     tmax ecm record-flash FILE.tbw
+#
 #   Housekeeping:
 #     tmax verify                       run the self-check suite
 #
@@ -63,10 +71,12 @@ case "$cmd" in
   learn|sync)
     # read-only on .tbw; no Ollama required
     exec python3 "$SRC/tune_assistant.py" "$cmd" "$@" ;;
+  ecm)
+    exec python3 "$SRC/ecm_state.py" "$@" ;;
   verify)
     exec "$ROOT/scripts/verify.sh" ;;
   help|-h|--help)
-    sed -n '2,25p' "$0" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,36p' "$0" | sed 's/^# \{0,1\}//' ;;
   *)
     echo "tmax: unknown command '$cmd' (try: tmax help)" >&2
     exit 2 ;;

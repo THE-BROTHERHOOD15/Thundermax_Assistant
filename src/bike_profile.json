@@ -13,6 +13,7 @@
     "ZZSSQXETDN100720"
   ],
   "current_flash_file": "M8_131_550CAM_63inj.tbw",
+  "ecm_state": "/home/joshua/Projects/thundermax-assistant/data/ecm_state.json",
   "current_working_pair": [
     "M8_131_CAM2_63inj fuelmoto origional.tbw",
     "auto tune run from ch home 330 345 degrees f head temp.tbw"

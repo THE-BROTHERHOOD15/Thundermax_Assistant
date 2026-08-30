@@ -37,12 +37,15 @@ earlier Grok/ChatGPT ("Throttle Logic") sessions whose source code was lost.
   the KB (reads only — never writes `.tbw`) and grows `bike_profile.json`.
 - `src/bike_profile.json` — the default bike setup + its known base-map IDs;
   defines what "my setup" means for `sync` matching and retrieval boosting.
+- `src/ecm_state.py` + `data/ecm_state.json` — claimed on-ECM / last-known-good /
+  last-pull pointer. `tmax ecm`. Copies `.tbw` files only; never hex-edits.
 - `src/api_server.py` + `API.md` — stdlib HTTP API (CORS, NDJSON streaming) for a
   web frontend; wraps ask/chat/analyze/learn/sync and reuses `stream_chat`,
   `pick_model`, `sync_folder`, `learn_write`. Runs as `tmax-api.service` on
   `0.0.0.0:8181`, ufw-scoped to LAN(192.168.1.0/24)+tailnet(100.64.0.0/10).
   `tune_assistant` refactor: `stream_chat()` is the shared token generator (CLI
   `ollama_chat` and the API both use it) — keep it yielding raw tokens.
+- `src/kb/` — three-layer knowledge base (see `docs/THUNDERMAX_KB.md`); live archive is `~/thundermax-kb`
 - `docs/corpus/` — local markdown corpus (45 docs) mirrored from the NAS
   brain_vault; the assistant prefers it, falling back to `/mnt/nas/ADMIN/brain_vault`
 - `reports/` — generated decode reports and tune indexes
