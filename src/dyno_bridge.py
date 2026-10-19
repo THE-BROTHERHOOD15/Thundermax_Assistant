@@ -1082,7 +1082,10 @@ def _check_injector_duty_closed_form(cal):
 
 def _check_injector_flow_matches_profile(cal):
     prof = _profile()
-    prof_flow = (prof.get("injectors") or {}).get("flow_gps")
+    prof_inj = prof.get("injectors")
+    # bike_profile.json may hold a plain-text injector note (e.g. "6.3 (current) ...")
+    # instead of a {"flow_gps": ...} object; treat that as "no flow declared".
+    prof_flow = prof_inj.get("flow_gps") if isinstance(prof_inj, dict) else None
     used = cal["injectors"].get("flow_gps")
     src = cal["injectors"].get("from") or cal["injectors"].get("source")
     ok = (prof_flow is not None and used is not None

@@ -1,0 +1,372 @@
+/* TMax Command Center — virtual dyno.
+   Uses only the palette custom properties defined in app.css (--bg, --panel,
+   --panel2, --line, --text, --mut, --accent, --ok, --warn, --bad, --cat-*).
+   No new colours are invented here. Mobile-first: 16px inputs (no iOS focus
+   zoom), >=44px touch targets, safe-area aware. */
+
+/* --- permanent disclaimer -------------------------------------------------- */
+.dyno-disclaimer {
+  border: 1px solid var(--warn);
+  border-left-width: 4px;
+  border-radius: 8px;
+  background: var(--panel2);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.45;
+  padding: 10px 12px;
+  margin: 0 0 12px;
+}
+.dyno-disclaimer strong { color: var(--warn); }
+
+/* --- house limits panel ---------------------------------------------------- */
+.dyno-limits .dyno-limits-head {
+  font-size: 12px;
+  color: var(--mut);
+  margin-bottom: 8px;
+}
+.dyno-limits .safety .row { font-size: 12px; }
+.dyno-limits-bad { border-color: var(--bad); }
+.dyno-limits-bad strong { color: var(--bad); display: block; margin-bottom: 4px; }
+.dyno-note { font-size: 12px; line-height: 1.45; margin-top: 6px; }
+.dyno-inj-warn { color: var(--text); border-top: 1px solid var(--line); padding-top: 8px; }
+.dyno-inj-warn .badge { margin-right: 4px; }
+
+/* --- run setup form -------------------------------------------------------- */
+.dyno-setup { margin-bottom: 12px; }
+.dyno-sub {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mut);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin: 16px 0 2px;
+}
+.dyno-change {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px 12px;
+  margin-bottom: 10px;
+  background: var(--panel2);
+}
+.dyno-change-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.dyno-change .fgrid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+.dyno-change select,
+.dyno-change input { width: 100%; font-size: 16px; min-height: 44px; }
+.dyno-rm {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  background: transparent;
+  border: 0;
+  color: var(--mut);
+  font-size: 15px;
+}
+.dyno-rm:hover { color: var(--bad); }
+
+.dyno-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+.dyno-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.dyno-preset { font-size: 13px; }
+.dyno-setup .fgrid select,
+.dyno-setup .fgrid input { width: 100%; font-size: 16px; min-height: 44px; }
+
+.dyno-run-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+.dyno-run { flex: 1 1 220px; justify-content: center; }
+.dyno-run-actions button { min-height: 48px; }
+
+.dyno-status { font-size: 13px; margin: 10px 0; }
+
+/* --- headline: gear / CHT / clock ------------------------------------------ */
+.dyno-headline {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: stretch;
+  margin: 10px 0 8px;
+}
+.dyno-hcell {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 8px 12px;
+  min-width: 0;
+}
+.dyno-hk {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--mut);
+}
+.dyno-gear-v {
+  font-size: 40px;
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+}
+.dyno-cht-v {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+}
+.dyno-cht-note {
+  font-size: 10px;
+  color: var(--warn);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  margin-top: 2px;
+}
+.dyno-clock {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  padding-top: 10px;
+}
+
+/* --- canvas cluster -------------------------------------------------------- */
+.dyno-cluster {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 4px 0;
+  overflow: hidden;
+}
+.dyno-canvas { display: block; width: 100%; touch-action: manipulation; }
+
+.dyno-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 11px;
+  margin: 8px 0 2px;
+}
+.dyno-key { display: inline-flex; align-items: center; gap: 5px; }
+.dyno-key::before {
+  content: '';
+  width: 14px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--mut);
+  display: inline-block;
+}
+.dyno-key.ok::before { background: var(--ok); }
+.dyno-key.warn::before { background: var(--warn); }
+.dyno-key.bad::before { background: var(--bad); }
+.dyno-key.plain::before { background: var(--text); width: 3px; height: 12px; }
+
+/* --- transport ------------------------------------------------------------- */
+.dyno-transport {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 12px 0 6px;
+}
+.dyno-transport-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.dyno-play { min-width: 118px; justify-content: center; }
+.dyno-transport-row button { min-height: 44px; }
+.dyno-speed { margin-left: auto; }
+.dyno-speed button { min-height: 44px; min-width: 44px; justify-content: center; }
+
+.dyno-scrub {
+  width: 100%;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
+  font-size: 16px;
+}
+.dyno-scrub::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--panel2);
+}
+.dyno-scrub::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  margin-top: -10px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--panel);
+}
+.dyno-scrub::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--panel2);
+}
+.dyno-scrub::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--panel);
+}
+
+/* --- timeline strip + issue markers ---------------------------------------- */
+.dyno-timeline { margin: 4px 0 10px; }
+.dyno-tl-track {
+  position: relative;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+  overflow: visible;
+}
+.dyno-tl-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: rgba(79, 140, 201, .28);
+  border-radius: 6px 0 0 6px;
+  pointer-events: none;
+}
+.dyno-tl-head {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 2px;
+  left: 0;
+  background: var(--accent);
+  pointer-events: none;
+}
+.dyno-tl-markers { position: absolute; inset: 0; }
+.dyno-mark {
+  position: absolute;
+  top: 50%;
+  /* the tap target is 44px; the visible pip is the ::after dot */
+  width: 44px;
+  height: 44px;
+  transform: translate(-22px, -22px);
+  padding: 0;
+  margin: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  display: block;
+}
+.dyno-mark::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border-radius: 50%;
+  background: var(--warn);
+  border: 2px solid var(--panel);
+  box-shadow: 0 0 0 1px var(--warn);
+}
+.dyno-mark.sev-block::after,
+.dyno-mark.sev-bad::after { background: var(--bad); box-shadow: 0 0 0 1px var(--bad); }
+.dyno-mark.active::after { width: 16px; height: 16px; margin: -8px 0 0 -8px; }
+.dyno-tl-legend { font-size: 11px; margin-top: 6px; line-height: 1.4; }
+
+/* --- issue detail + list --------------------------------------------------- */
+.dyno-issue-detail { margin: 6px 0 0; }
+.dyno-issue-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.dyno-issue-head code,
+.dyno-issue-body code {
+  background: var(--panel2);
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: 12px;
+  color: var(--mut);
+}
+.dyno-issue-msg { font-size: 13px; line-height: 1.45; }
+
+.dyno-issues { display: flex; flex-direction: column; }
+.dyno-issue-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  min-height: 44px;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  padding: 10px 4px;
+  color: var(--text);
+}
+.dyno-issue-row:last-child { border-bottom: 0; }
+.dyno-issue-row.active { background: var(--panel2); }
+.dyno-issue-t { color: var(--mut); flex: none; padding-top: 1px; }
+.dyno-issue-body { min-width: 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+
+/* --- baseline / calibration record ----------------------------------------- */
+.dyno-baseline .row { align-items: baseline; gap: 16px; }
+.dyno-baseline .row .lim {
+  text-align: right;
+  font-weight: 500;
+  overflow-wrap: anywhere;
+  max-width: 68%;
+}
+.dyno-kv-group {
+  border-left: 2px solid var(--line);
+  padding-left: 10px;
+  margin: 6px 0;
+}
+.dyno-kv-head {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  color: var(--mut);
+  padding: 4px 0 2px;
+}
+.dyno-kv.depth-1 .row,
+.dyno-kv.depth-2 .row { font-size: 12px; }
+
+/* --- summary --------------------------------------------------------------- */
+.dyno-summary { margin-top: 12px; padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+.dyno-run-banner { font-weight: 600; }
+/* delta values are short strings ("≈ +3 to +5 hp"), not bare numbers */
+.dyno-summary .tile .v { font-size: 16px; overflow-wrap: anywhere; }
+
+/* --- desktop --------------------------------------------------------------- */
+@media (min-width: 720px) {
+  .dyno-headline { grid-template-columns: auto auto 1fr; }
+  .dyno-gear-v { font-size: 52px; }
+  .dyno-clock { font-size: 17px; }
+  .dyno-transport { flex-direction: row; align-items: center; }
+  .dyno-transport-row { flex: none; }
+  .dyno-scrub { flex: 1; }
+  .dyno-speed { margin-left: 0; }
+}

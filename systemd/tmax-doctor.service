@@ -1,0 +1,39 @@
+[Unit]
+# TMax healer — run the invariant checks, repair what is safe, and shout if
+# something is actually broken.
+#
+# Paired with tmax-doctor.timer. A USER unit, same reasoning as its siblings.
+#
+#   install:  systemctl --user link  %h/Projects/thundermax-assistant/systemd/tmax-doctor.service
+#             systemctl --user link  %h/Projects/thundermax-assistant/systemd/tmax-doctor.timer
+#             systemctl --user enable --now tmax-doctor.timer
+#   run now:  systemctl --user start tmax-doctor
+#   logs:     journalctl --user -u tmax-doctor -n 40
+#
+# WHY A HEALER AND NOT JUST A FIX: some failures here are permanent properties
+# of the environment rather than bugs that can be closed. The NAS is a network
+# share and will go away. Ollama is shared with training runs and will be busy
+# or reconfigured. Elasticsearch is optional and will be down in the garage.
+# Those get watched. Everything else is fixed for good, and this exists so it
+# STAYS fixed — in particular the num_ctx lint, which guards a silent
+# truncation bug that has already been reintroduced four separate times.
+Description=TMax healer (self-check and safe repair)
+Documentation=file:%h/Projects/thundermax-assistant/COLLABORATION.md
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/Projects/thundermax-assistant
+Environment=PYTHONUNBUFFERED=1
+# heal first (creates missing dirs, resets a corrupt watcher state), then
+# report. `-` on the check so a WARN or FAIL is recorded in the journal
+# without systemd marking the unit failed and back-off-ing the timer: the
+# whole point is to keep reporting a condition that persists.
+ExecStart=/usr/bin/python3 %h/Projects/thundermax-assistant/src/doctor.py heal
+ExecStart=-/usr/bin/python3 %h/Projects/thundermax-assistant/src/doctor.py check
+# Same structural guarantee as the other units: the NAS mount is read-only to
+# this process, so the healer physically cannot damage a .tbw.
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/Projects/thundermax-assistant/data %h/Projects/thundermax-assistant/reports
+PrivateTmp=true
+NoNewPrivileges=true

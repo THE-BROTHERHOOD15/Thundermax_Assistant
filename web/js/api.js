@@ -19,6 +19,14 @@ export const get = (p) => api(p);
 export const post = (p, body) => api(p, { method: 'POST', body });
 export const patch = (p, body) => api(p, { method: 'PATCH', body });
 
+// --- resumable chat stream ---------------------------------------------------
+// The vetted iOS-survival protocol: a NEW EventSource never sends Last-Event-ID,
+// so on any wake signal (visibilitychange, pageshow, focus) we unconditionally
+// close the possibly-zombie source and open a fresh one; the server replays the
+// whole buffer from seq 0 and the consumer renders idempotently keyed by seq.
+// Native auto-reconnect (which DOES send Last-Event-ID) still trims replays on
+// transient drops. `done`/`error` are terminal: stop, never retry.
+
 export function openChatStream(messageId, handlers) {
   let es = null;
   let closed = false;
@@ -58,6 +66,7 @@ export function openChatStream(messageId, handlers) {
   return { close };
 }
 
+// Track the in-flight message across tab-kill / PWA relaunch.
 const INFLIGHT_KEY = 'tmax-inflight';
 export function rememberInflight(sessionId, messageId) {
   localStorage.setItem(INFLIGHT_KEY, JSON.stringify({ sessionId, messageId }));

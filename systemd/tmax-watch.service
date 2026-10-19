@@ -1,0 +1,48 @@
+[Unit]
+# TMax tune watcher — briefs Joshua when a new .tbw lands on the NAS.
+#
+# A USER unit for the same reasons as tmax-web.service: it runs as Joshua,
+# reads the tune folder, and writes only briefings + its own state inside the
+# repo. Needs `loginctl enable-linger joshua`, already set on this tower.
+#
+#   install:  systemctl --user link  %h/Projects/thundermax-assistant/systemd/tmax-watch.service
+#             systemctl --user enable --now tmax-watch
+#   logs:     journalctl --user -u tmax-watch -f
+#   one-shot: python3 src/tune_watcher.py --once
+#
+# PATHS POINT AT THE MAIN CHECKOUT, matching tmax-web.service. To run the
+# worktree build instead, override the two paths rather than editing this file:
+#   systemctl --user edit tmax-watch
+#     [Service]
+#     ExecStart=
+#     ExecStart=/usr/bin/python3 %h/Projects/thundermax-assistant/.claude/worktrees/tmax-command-center/src/tune_watcher.py
+Description=TMax tune watcher (brief on new .tbw files)
+Documentation=file:%h/Projects/thundermax-assistant/COLLABORATION.md
+# The NAS is NOT a dependency. If the mount is down the watcher logs once and
+# keeps polling; it must survive the NAS coming and going without dying and
+# without re-briefing the whole folder when it returns.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Projects/thundermax-assistant
+ExecStart=/usr/bin/python3 %h/Projects/thundermax-assistant/src/tune_watcher.py
+Environment=PYTHONUNBUFFERED=1
+# Point at a different folder without editing this file:
+#   systemctl --user edit tmax-watch  ->  Environment=TMAX_TUNES_DIR=/some/path
+Restart=always
+RestartSec=10
+# The watcher is strictly read-only with respect to .tbw files. ProtectSystem
+# =strict makes the whole hierarchy — including the NAS mount it reads tunes
+# from — read-only, so "never write a .tbw" is enforced by the kernel rather
+# than by good intentions. The only writable paths are its own state and the
+# briefings it produces.
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/Projects/thundermax-assistant/data %h/Projects/thundermax-assistant/reports
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

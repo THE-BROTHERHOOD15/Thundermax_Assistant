@@ -1,0 +1,18 @@
+[Unit]
+Description=Run the TMax healer periodically
+Documentation=file:%h/Projects/thundermax-assistant/COLLABORATION.md
+
+[Timer]
+# Once 10 minutes after boot, then every 6 hours. Deliberately not frequent:
+# nothing here is time-critical, the checks touch the NAS, and a healer that
+# logs every minute trains you to ignore it.
+OnBootSec=10min
+OnUnitActiveSec=6h
+# Missed runs (tower off, session not logged in) fire on the next start rather
+# than being skipped -- otherwise the healer is silent exactly when something
+# has been left broken for a while.
+Persistent=true
+AccuracySec=1min
+
+[Install]
+WantedBy=timers.target
