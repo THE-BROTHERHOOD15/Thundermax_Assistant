@@ -1,0 +1,43 @@
+[Unit]
+# TMax Command Center — the web front end for the ThunderMax tuning assistant.
+#
+# Deliberately a USER unit, not a system one: it runs as Joshua, reads his
+# corpus under ~/Projects and his tune-log under ~/hermes-rag, and writes only
+# inside the repo's data/ dir. Needs `loginctl enable-linger joshua` so it
+# survives logout — already set on this tower.
+#
+#   install:  systemctl --user link  %h/Projects/thundermax-assistant/systemd/tmax-web.service
+#             systemctl --user enable --now tmax-web
+#   logs:     journalctl --user -u tmax-web -f
+#
+# PORT 8092 — NOT 8090 (AI Operator owns that) and NOT 8181 (tmax-api.service,
+# the earlier shop UI, which stays running until this build has been ridden
+# with and explicitly retired).
+Description=TMax Command Center (ThunderMax tuning assistant web UI)
+Documentation=file:%h/Projects/thundermax-assistant/COLLABORATION.md
+# Ollama/Elasticsearch/the NAS are all OPTIONAL at boot: health degrades
+# visibly and the app still serves. Do not add hard dependencies on them —
+# the whole point is that it comes up in the garage even when they do not.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/Projects/thundermax-assistant
+ExecStart=/usr/bin/python3 %h/Projects/thundermax-assistant/src/webui_server.py --host 0.0.0.0 --port 8092
+Environment=PYTHONUNBUFFERED=1
+# Set a token to require auth on the LAN (POST /api/auth sets a cookie):
+#   systemctl --user edit tmax-web   ->   Environment=TMAX_TOKEN=...
+# Left unset = open on the LAN/tailnet, which is the garage default.
+Restart=always
+RestartSec=3
+# The parser and the API are strictly read-only with respect to .tbw files;
+# this makes that structural rather than merely intended.
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/Projects/thundermax-assistant/data %h/hermes-rag/tune-log %h/Projects/thundermax-assistant/docs/corpus
+PrivateTmp=true
+NoNewPrivileges=true
+
+[Install]
+WantedBy=default.target

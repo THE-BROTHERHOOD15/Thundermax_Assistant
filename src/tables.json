@@ -1,0 +1,106 @@
+{
+  "_about": "ThunderMax TBW table map for the 2023 Low Rider ST 131 build. Bands are byte-offset ranges in the 214470-byte .tbw, derived by differential analysis of semantically-labeled tune pairs (see table_map.py LABELED_PAIRS). 'confidence' reflects how cleanly a band separated by intent across independent pairs. Engineering-unit scaling and exact axis cell order still require ONE TMax Tuner ground-truth reading per band (see needs_ground_truth). Do not treat medium/low bands as cell-accurate.",
+  "file_size": 214470,
+  "metadata_boundary": "0x3C0",
+  "record_note": "Map cells are little-endian fields on a 4- or 8-byte stride (u16 value, often followed by a flag/limit word), NOT a packed grid. AutoTune correction cells are SIGNED (small negatives appear as 0x0000 -> 0xFFxx borrows in raw diffs).",
+  "timing_scale_finding": {
+    "raw_per_degree": 49,
+    "evidence": "global -1 deg edit shifted every cell in the 0xC3C9 timing-linked array by exactly -49 raw; 34deg*49=1666, 33deg*49=1617 (a clean -49 low-byte step with no carry).",
+    "confidence": "medium",
+    "caveat": "confirmed on the 0xC3C9 scalar/limit array only; the main RPMxTPS timing map's scale is assumed equal but UNCONFIRMED."
+  },
+  "bands": [
+    {
+      "name": "afr_target",
+      "range": ["0x01989", "0x01BCA"],
+      "stride": 8,
+      "category": "AFR",
+      "confidence": "high",
+      "desc": "AFR target region (AFR vs TPS/RPM). Isolated by the advancedtiming -> +AFR-correction pair (180 cells changed, no timing/fuel overlap).",
+      "needs_ground_truth": "Read one AFR target cell in TMax Tuner (e.g. 3000rpm/20% TPS) and match its raw value here to lock scale + cell order."
+    },
+    {
+      "name": "timing_map_main",
+      "range": ["0x01FC9", "0x02182"],
+      "stride": 4,
+      "category": "TIMING",
+      "confidence": "medium",
+      "desc": "Primary ignition timing map (deg BTDC vs TPS/RPM). Changed by both the global -1deg and the +2deg-each-point pairs, not by fuel/AFR-only edits.",
+      "needs_ground_truth": "Confirm 11 RPM rows (1000..6000) x 14 TPS cols (0..100%) ordering against M8_131ci_Timing_Tables doc; verify raw/49 == degrees."
+    },
+    {
+      "name": "afr_ve_pages",
+      "range": ["0x05A79", "0x06E03"],
+      "stride": 8,
+      "category": "AFR_VE",
+      "confidence": "high",
+      "desc": "Five ~900-byte fuel/VE pages (~0x400 apart), each ~74-76 cells. Rewritten by AFR-target edits and by fuel edits (both AFR-correction and +fuel pairs land here) -> fuel VE pages that AutoTune adjusts to hit the AFR target.",
+      "subpages": ["0x05A79", "0x05E89", "0x06289", "0x06689", "0x06A45"],
+      "needs_ground_truth": "Identify whether these are front/rear fuel-flow (VE) pages by RPM; anchor with one TMax cell per page."
+    },
+    {
+      "name": "fuel_flow_pages",
+      "range": ["0x06FD9", "0x08292"],
+      "stride": 8,
+      "category": "FUEL",
+      "confidence": "medium",
+      "desc": "Five ~570-700 byte pages changed by the +fuel edit but not by pure timing or AFR-target edits. Candidate front/rear fuel-flow map pages.",
+      "subpages": ["0x06FD9", "0x073D9", "0x077D9", "0x07BD9", "0x07FD9"],
+      "needs_ground_truth": "Distinguish front vs rear fuel pages via a rear-only fuel edit; anchor scale with one TMax fuel cell."
+    },
+    {
+      "name": "timing_limit_array",
+      "range": ["0x0C3C9", "0x0C7C3"],
+      "stride": 8,
+      "category": "TIMING",
+      "confidence": "medium",
+      "desc": "128 u32 fields (4-byte value on 8-byte stride) forming a timing-linked clamp/limit array. Every cell shifted -49 by the global -1deg edit -> this is where raw_per_degree=49 was measured.",
+      "needs_ground_truth": "Identify which TMax limit parameter this backs (max-advance / knock-retard clamp)."
+    },
+    {
+      "name": "fuel_rich_correction",
+      "range": ["0x2D6CB", "0x2EFC4"],
+      "stride": 4,
+      "category": "FUEL",
+      "confidence": "high",
+      "desc": "Large fuel/rich correction + VE-learn region. The 'rich adjustments' edit landed almost entirely here (2081 cells), with AFR overlap. Likely the AutoTune fuel-learn / VE trim store.",
+      "needs_ground_truth": "Confirm whether this is learned VE (volatile) vs base fuel; treat as AutoTune data until proven otherwise."
+    },
+    {
+      "name": "autotune_learned",
+      "range": ["0x0DDC5", "0x0F1C4"],
+      "stride": 2,
+      "category": "AUTOTUNE",
+      "confidence": "low",
+      "desc": "Signed AutoTune learned/correction cells (2-byte stride). Churns on every autotune iteration across all edit types; not a directly rider-tuned table.",
+      "needs_ground_truth": "Likely not user-editable; verify against a 'reset autotune' capture."
+    },
+    {
+      "name": "learned_ve_bulk",
+      "range": ["0x157C7", "0x177C4"],
+      "stride": 4,
+      "category": "AUTOTUNE",
+      "confidence": "low",
+      "desc": "Largest single region (~8KB, 4-byte stride). Moves on nearly every change including pure autotune runs. Bulk learned-VE / long-term-trim store or a large checksum-covered block.",
+      "needs_ground_truth": "Correlate with a known AutoTune clear."
+    },
+    {
+      "name": "section_metadata_checksums",
+      "range": ["0x00021", "0x003C0"],
+      "stride": 1,
+      "category": "METADATA",
+      "confidence": "high",
+      "desc": "Per-section metadata / checksums below the 0x3C0 boundary. Changes whenever ANY table changes; not tunable content, used only for integrity.",
+      "needs_ground_truth": "None. Never edit; a bad checksum can brick a flash."
+    },
+    {
+      "name": "shared_churn_unresolved",
+      "range": ["0x003C0", "0x05132"],
+      "stride": 1,
+      "category": "SHARED",
+      "confidence": "low",
+      "desc": "Broad block that moves on every edit. Interleaves more checksums with structured, map-like page data that is NOT yet separated into named tables. The confirmed afr_target and timing_map_main bands are nested inside this range and take precedence. Anything else labeled SHARED here is unresolved -- do not interpret its values.",
+      "needs_ground_truth": "Needs surgically-isolated single-table edits (change ONE map in TMax, save, diff) to split the real pages out of the checksum churn."
+    }
+  ]
+}

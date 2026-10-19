@@ -4,7 +4,7 @@
   "model": "2023 Low Rider ST (FXLRST)",
   "engine": "Milwaukee-Eight 131ci",
   "cam": "S&S 550 (CAM2). Prior lineage: SE8-517.",
-  "injectors": "6.3 (current). NEVER flash a 5.5-injector / *55inj* map onto 6.3s.",
+  "injectors": {"flow_gps": 6.3, "unit": "g/s", "needs_confirmation": false, "source": "USB TMAX pull 2026-08-19 + desktop save: current hardware is 6.3 injectors with base map HXSSEDCAAN061617.", "note": "Drives the virtual dyno's injector-duty gauge; duty scales inversely with flow, so a wrong value here mis-reads every simulated pull. NEVER flash a 5.5-injector (*55inj*) map onto these. The older corpus note 'Injector Scaling: Calibrated for 5.5g/sec' describes base map ZZSSQXETDN100720 and is SUPERSEDED for the current build.", "superseded": {"flow_gps": 5.5, "source": "thundermax_nas_readme_tune_notes.md, base map ZZSSQXETDN100720"}},
   "exhaust": "2-into-1",
   "ecm": "ThunderMax TBW (throttle-by-wire)",
   "base_map_ids": [

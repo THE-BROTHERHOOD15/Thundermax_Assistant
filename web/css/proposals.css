@@ -1,0 +1,338 @@
+/* Proposals — vetting pipeline. Extends app.css; defines no custom properties
+   of its own beyond the two derived tints below, and overrides nothing global.
+   Safety hierarchy is carried by weight and area, not by color alone:
+   BLOCK = filled red slab, WARN = amber left rule, OBJECT = amber slab that is
+   deliberately NOT red, because an LLM can never hard-block. */
+
+:root {
+  --prop-bad-wash: rgba(224, 93, 93, .12);
+  --prop-warn-wash: rgba(232, 179, 57, .10);
+}
+
+/* --- list ----------------------------------------------------------------- */
+
+.prop-head {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 8px; flex-wrap: wrap;
+}
+
+.prop-group {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+  color: var(--mut); margin: 16px 0 4px; padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+.prop-group:first-of-type { margin-top: 4px; border-top: 0; padding-top: 0; }
+
+.prop-dot {
+  width: 9px; height: 9px; border-radius: 50%; flex: none;
+  background: var(--mut); display: inline-block;
+}
+.prop-dot.st-draft { background: var(--mut); }
+.prop-dot.st-vetted { background: var(--accent); }
+.prop-dot.st-approved { background: var(--ok); }
+.prop-dot.st-applied_on_bike { background: var(--warn); }
+.prop-dot.st-validated_by_ride { background: var(--ok); box-shadow: 0 0 0 3px rgba(76, 175, 125, .22); }
+.prop-dot.st-rejected { background: var(--bad); }
+
+.prow {
+  display: flex; gap: 10px; align-items: flex-start; justify-content: space-between;
+  padding: 12px 2px; border-bottom: 1px solid var(--line);
+  text-decoration: none; color: var(--text); min-height: 44px;
+}
+.prow:last-child { border-bottom: 0; }
+.prow .prop-dot { margin-top: 6px; }
+.prow-main { min-width: 0; flex: 1; }
+.prow-claim {
+  font-weight: 600; font-size: 14px; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.prow-meta { font-size: 12px; margin-top: 3px; }
+.prow-sum {
+  font-size: 12px; margin-top: 3px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.prow-side { flex: none; display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
+
+/* --- detail header + stepper --------------------------------------------- */
+
+.prop-title { display: flex; gap: 10px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+.prop-claim { margin: 0; font-size: 16px; line-height: 1.4; overflow-wrap: anywhere; }
+.prop-title-side { display: flex; gap: 6px; flex-wrap: wrap; flex: none; }
+.prop-sub { font-size: 12px; margin: 6px 0 0; overflow-wrap: anywhere; }
+
+.prop-steps {
+  list-style: none; margin: 14px 0 0; padding: 0;
+  display: flex; gap: 4px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+}
+.prop-step {
+  flex: 1 0 auto; min-width: 92px; display: flex; flex-direction: column;
+  align-items: center; gap: 5px; position: relative; padding-top: 2px;
+}
+/* connector */
+.prop-step::before {
+  content: ""; position: absolute; top: 15px; left: -50%; width: 100%;
+  height: 2px; background: var(--line);
+}
+.prop-step:first-child::before { display: none; }
+.prop-step.done::before, .prop-step.current::before { background: var(--accent); }
+.prop-step.rejected::before { background: var(--bad); }
+
+.prop-step-dot {
+  width: 28px; height: 28px; border-radius: 50%; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+  background: var(--panel2); color: var(--mut); border: 2px solid var(--line);
+}
+.prop-step-label {
+  font-size: 11px; color: var(--mut); text-align: center; line-height: 1.25;
+}
+.prop-step.done .prop-step-dot { background: var(--accent); border-color: var(--accent); color: #fff; }
+.prop-step.done .prop-step-label { color: var(--text); }
+.prop-step.current .prop-step-dot {
+  background: var(--bg); border-color: var(--accent); color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 140, 201, .22);
+}
+.prop-step.current .prop-step-label { color: var(--text); font-weight: 700; }
+.prop-step.rejected .prop-step-dot { background: var(--bad); border-color: var(--bad); color: #fff; }
+.prop-step.rejected .prop-step-label { color: var(--bad); font-weight: 700; }
+
+.prop-steps-note { font-size: 12px; margin-top: 10px; }
+
+/* --- block slab ----------------------------------------------------------- */
+
+.prop-blockcard {
+  border-color: var(--bad); border-width: 2px;
+  background: linear-gradient(var(--prop-bad-wash), var(--prop-bad-wash)), var(--panel);
+  font-size: 13px; line-height: 1.5;
+}
+.prop-blockhead {
+  font-size: 17px; font-weight: 800; letter-spacing: 2px;
+  color: var(--bad); margin-bottom: 6px;
+}
+
+/* --- vet report ----------------------------------------------------------- */
+
+.prop-verdict {
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;
+  border: 1px solid var(--line); background: var(--panel2);
+}
+.prop-verdict-main { font-size: 15px; font-weight: 700; letter-spacing: .5px; }
+.prop-verdict-sub { font-size: 12px; color: var(--mut); margin-top: 3px; overflow-wrap: anywhere; }
+.prop-verdict.ok { border-color: var(--ok); }
+.prop-verdict.ok .prop-verdict-main { color: var(--ok); }
+.prop-verdict.warn { border-color: var(--warn); }
+.prop-verdict.warn .prop-verdict-main { color: var(--warn); }
+.prop-verdict.bad {
+  border-color: var(--bad); border-width: 2px;
+  background: linear-gradient(var(--prop-bad-wash), var(--prop-bad-wash)), var(--panel2);
+}
+.prop-verdict.bad .prop-verdict-main { color: var(--bad); font-size: 18px; letter-spacing: 1.5px; }
+
+.prop-findings { margin: 14px 0; }
+.prop-findings-head {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;
+  color: var(--mut); margin-bottom: 4px;
+}
+.prop-findings-head.bad { color: var(--bad); }
+.prop-findings-head.warn { color: var(--warn); }
+
+.prop-attrib { font-size: 12px; color: var(--mut); line-height: 1.5; margin-bottom: 8px; }
+
+.prop-finding {
+  border-radius: 8px; padding: 10px 12px; margin: 6px 0;
+  background: var(--panel2); border-left: 4px solid var(--line);
+}
+.prop-finding.bad {
+  border-left-color: var(--bad);
+  background: linear-gradient(var(--prop-bad-wash), var(--prop-bad-wash)), var(--panel2);
+}
+.prop-finding.warn { border-left-color: var(--warn); }
+.prop-finding-top { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 3px; }
+.prop-rule {
+  font-size: 11px; background: var(--bg); border: 1px solid var(--line);
+  border-radius: 4px; padding: 1px 6px; color: var(--text);
+}
+.prop-finding.bad .prop-rule { border-color: var(--bad); color: var(--bad); }
+.prop-chg { font-size: 11px; }
+.prop-finding-msg { font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
+.prop-finding.bad .prop-finding-msg { font-weight: 600; }
+
+/* unverifiable checks — the .tbw scaling gap */
+.prop-unver {
+  margin: 14px 0; border-radius: 8px; padding: 12px 14px;
+  border: 1px dashed var(--warn);
+  background: linear-gradient(var(--prop-warn-wash), var(--prop-warn-wash)), var(--panel2);
+  font-size: 13px; line-height: 1.55;
+}
+.prop-unver-head {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; color: var(--warn); margin-bottom: 5px;
+}
+.prop-unver-n {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 26px; height: 26px; padding: 0 6px; border-radius: 13px;
+  background: var(--warn); color: #221a00; font-weight: 800; font-size: 14px;
+}
+
+/* citation support */
+.prop-cites { margin: 14px 0; }
+.prop-cite {
+  display: flex; gap: 8px; align-items: flex-start;
+  padding: 7px 0; border-bottom: 1px solid var(--line);
+}
+.prop-cite:last-child { border-bottom: 0; }
+.prop-cite-src { font-size: 12px; overflow-wrap: anywhere; }
+.prop-cite-q { font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+
+/* adversarial reviewer — loud, but never red: it cannot block */
+.prop-adv {
+  margin: 14px 0 0; border-radius: 8px; padding: 12px 14px;
+  border: 1px solid var(--line); background: var(--panel2);
+}
+.prop-adv.object {
+  border: 2px solid var(--warn);
+  background: linear-gradient(var(--prop-warn-wash), var(--prop-warn-wash)), var(--panel2);
+}
+.prop-adv.concur { border-color: var(--ok); }
+.prop-adv-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+.prop-adv-verdict { font-size: 15px; font-weight: 800; letter-spacing: 1px; }
+.prop-adv.object .prop-adv-verdict { color: var(--warn); }
+.prop-adv.concur .prop-adv-verdict { color: var(--ok); }
+.prop-adv-model { font-size: 12px; color: var(--mut); overflow-wrap: anywhere; }
+.prop-adv-note {
+  font-size: 12px; color: var(--mut); line-height: 1.5;
+  margin: 6px 0 0; padding: 7px 10px; border-radius: 6px; background: var(--bg);
+}
+.prop-adv-note.object { color: var(--text); border-left: 3px solid var(--warn); }
+.prop-adv-body { font-size: 13px; line-height: 1.55; margin-top: 10px; overflow-wrap: break-word; }
+.prop-adv-body p { margin: 8px 0; }
+.prop-adv-body ul { margin: 8px 0; padding-left: 20px; }
+.prop-adv-body h3, .prop-adv-body h4, .prop-adv-body h5 { font-size: 13px; margin: 12px 0 4px; }
+.prop-adv-body pre {
+  background: var(--bg); padding: 10px; border-radius: 8px;
+  overflow-x: auto; font-size: 12px;
+}
+.prop-adv-body code { background: var(--bg); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+.prop-adv-body table { border-collapse: collapse; margin: 8px 0; }
+.prop-adv-body td, .prop-adv-body th { border: 1px solid var(--line); padding: 4px 8px; font-size: 12px; }
+
+/* --- live vetting --------------------------------------------------------- */
+
+.prop-vetlive {
+  margin: 12px 0; border-radius: 8px; padding: 12px 14px;
+  border: 1px solid var(--accent); background: var(--panel2);
+}
+.prop-vetlive.failed { border-color: var(--bad); }
+.prop-vetlive-head { font-weight: 700; font-size: 14px; display: flex; align-items: center; }
+.prop-vetlive-note { font-size: 12px; line-height: 1.5; margin: 6px 0 10px; }
+
+.prop-stage {
+  border-left: 3px solid var(--line); padding: 7px 0 7px 10px; margin: 6px 0;
+}
+.prop-stage.running { border-left-color: var(--accent); }
+.prop-stage.done { border-left-color: var(--ok); }
+.prop-stage.failed, .prop-stage.error { border-left-color: var(--bad); }
+.prop-stage-top { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.prop-stage-name { font-size: 13px; font-weight: 600; }
+.prop-stage-status {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--mut);
+}
+.prop-stage.running .prop-stage-status { color: var(--accent); }
+.prop-stage.done .prop-stage-status { color: var(--ok); }
+.prop-stage.failed .prop-stage-status, .prop-stage.error .prop-stage-status { color: var(--bad); }
+.prop-stage-detail { font-size: 12px; margin-top: 2px; overflow-wrap: anywhere; }
+
+/* --- actions -------------------------------------------------------------- */
+
+.prop-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.prop-actions button, .prop-actions .btn { min-height: 44px; }
+
+.prop-ack {
+  margin: 10px 0; border-radius: 8px; padding: 12px 14px;
+  border: 2px solid var(--warn);
+  background: linear-gradient(var(--prop-warn-wash), var(--prop-warn-wash)), var(--panel2);
+}
+.prop-ack-label {
+  display: flex; gap: 10px; align-items: center; min-height: 44px;
+  font-size: 14px; color: var(--text); margin: 0; cursor: pointer; line-height: 1.4;
+}
+.prop-ack-label input[type="checkbox"] {
+  width: 22px; height: 22px; flex: none; accent-color: var(--warn);
+}
+.prop-ack-why { font-size: 12px; line-height: 1.5; margin-top: 6px; }
+
+.prop-err {
+  margin-top: 10px; border-radius: 8px; padding: 10px 12px;
+  border: 1px solid var(--bad); color: var(--bad);
+  background: linear-gradient(var(--prop-bad-wash), var(--prop-bad-wash)), var(--panel2);
+  font-size: 13px; line-height: 1.45; overflow-wrap: anywhere;
+}
+
+.prop-immutable { font-size: 12px; line-height: 1.5; margin-top: 10px; }
+
+/* --- changes / dyno / history --------------------------------------------- */
+
+.prop-delta { font-weight: 700; }
+.prop-delta.up { color: var(--cat-fuel); }
+.prop-delta.down { color: var(--cat-timing); }
+
+.prop-run { margin: 10px 0; padding-top: 10px; border-top: 1px solid var(--line); }
+.prop-run:first-of-type { border-top: 0; padding-top: 0; }
+.prop-run-head {
+  display: flex; justify-content: space-between; gap: 10px;
+  align-items: baseline; flex-wrap: wrap; font-weight: 600; font-size: 13px; margin-bottom: 8px;
+}
+
+.prop-hist { display: flex; flex-direction: column; }
+.prop-hist-row {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 9px 0; border-bottom: 1px solid var(--line);
+}
+.prop-hist-row:last-child { border-bottom: 0; }
+.prop-hist-row .prop-dot { margin-top: 6px; }
+.prop-hist-row > div { min-width: 0; flex: 1; }
+.prop-hist-top {
+  display: flex; justify-content: space-between; gap: 10px;
+  flex-wrap: wrap; font-size: 13px; font-weight: 600;
+}
+.prop-hist-top .muted { font-weight: 400; font-size: 12px; }
+.prop-hist-actor { font-size: 11px; }
+.prop-hist-note { font-size: 12px; margin-top: 3px; overflow-wrap: anywhere; white-space: pre-wrap; }
+
+/* --- new proposal form ---------------------------------------------------- */
+
+.prop-h3 { font-size: 13px; margin: 18px 0 2px; }
+.prop-tier-note { font-size: 12px; margin-top: 5px; }
+
+.prop-rows { display: flex; flex-direction: column; gap: 10px; margin-top: 8px; }
+.prop-row {
+  border: 1px solid var(--line); border-radius: 8px;
+  padding: 10px 12px 12px; background: var(--panel2);
+}
+.prop-row-head {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; margin-bottom: 2px;
+}
+.prop-row-num {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--mut);
+}
+.prop-row-x { min-height: 38px; padding: 4px 12px; font-size: 13px; }
+.prop-row .fgrid { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); }
+.prop-row input, .prop-row select { width: 100%; font-size: 16px; } /* 16px: no iOS zoom */
+.prop-row-hint { font-size: 11px; line-height: 1.45; margin-top: 8px; }
+
+/* --- mobile / safe area --------------------------------------------------- */
+
+@media (max-width: 719px) {
+  .prop-steps { gap: 0; }
+  .prop-step { min-width: 76px; }
+  .prop-step-label { font-size: 10px; }
+  .prop-head .btn { flex: 1; justify-content: center; }
+  .prop-actions button, .prop-actions .btn { flex: 1 1 46%; justify-content: center; }
+  /* clear the tab bar + home indicator (#view already pads by --tabbar-h) */
+  .prop-hist, .prop-immutable { padding-bottom: env(safe-area-inset-bottom, 0px); }
+}
+@media (min-width: 720px) {
+  .prop-adv-body, .prop-finding-msg, .prop-unver { max-width: 78ch; }
+}

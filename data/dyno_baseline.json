@@ -1,0 +1,174 @@
+{
+  "_README": [
+    "Calibration block for src/virtual_dyno.py — the DETERMINISTIC virtual dyno.",
+    "No LLM touches this file. Every number carries a unit and a source.",
+    "Anything marked needs_confirmation=true is an ESTIMATE that has not been",
+    "checked against Joshua's own bike / a published H-D spec sheet / a real",
+    "dyno sheet. The dyno echoes those flags back in baseline_status so the UI",
+    "can show them next to every result.",
+    "NOTE: timing_backbone and belly_derate_deg are NOT stored here — they are",
+    "owned by src/guardrails.py (TIMING_BACKBONE / BELLY_DERATE_DEG) and are",
+    "imported from there so there is exactly one copy in the codebase."
+  ],
+
+  "schema_version": 1,
+  "setup_key": "m8-131-lrst-2into1-tbw",
+  "label": "2023 Harley-Davidson Low Rider ST (FXLRST) — Milwaukee-Eight 131ci, 2-into-1, ThunderMax TBW",
+
+  "uncertainty_pct": 15,
+  "calibration_status": "UNCALIBRATED — first-order physics model seeded from published 131ci kit charts and shop tune notes. No real dyno sheet for THIS bike has been folded in. Treat every number as directional (±15%), never as a measurement.",
+
+  "engine": {
+    "displacement_ci": 131.0,
+    "displacement_ci_source": "bike_profile.json — 'Milwaukee-Eight 131ci' (Screamin' Eagle 131 crate build)",
+    "cylinders": 2,
+    "strokes": 4,
+    "ci_to_cc": 16.387064,
+    "ci_to_cc_unit": "cm^3 per cubic inch (exact, 2.54^3)",
+    "ve_peak": 1.02,
+    "ve_peak_unit": "fraction (1.00 = 100% volumetric efficiency)",
+    "ve_peak_rpm": 3500,
+    "ve_peak_needs_confirmation": true,
+    "ve_peak_source": "ESTIMATE. A 131 crate motor with a free-flowing 2-into-1 is assumed to just break 100% VE at the peak-torque rpm. Chosen so the closed-form injector duty at WOT lands in the 70-85% band the shop expects with 5.5 g/s injectors. CONFIRM against a datalog: read actual VE-table cells at 3500 rpm / 100% TPS in TMax Tuner.",
+    "ve_curve_shape": "VE(rpm) = ve_peak * baseline_torque(rpm) / peak_torque — torque is proportional to trapped air mass at fixed AFR/timing, so the torque curve IS the VE curve, normalised."
+  },
+
+  "baseline": {
+    "_note": "Published-chart anchors for the 131 kit. hp = torque * rpm / 5252.",
+    "anchor_peak_torque": {
+      "value": 140.0,
+      "unit": "lb-ft",
+      "rpm": 3500,
+      "source": "Published Screamin' Eagle 131 crate-engine torque chart (~140 lb-ft @ ~3500 rpm).",
+      "needs_confirmation": true
+    },
+    "anchor_peak_hp": {
+      "value": 125.0,
+      "unit": "hp",
+      "rpm": 5500,
+      "source": "Published Screamin' Eagle 131 crate-engine hp chart (~125 hp @ ~5500 rpm). 125 hp @ 5500 rpm == 119.4 lb-ft, which is the 5500 rpm point of torque_curve below.",
+      "needs_confirmation": true
+    },
+    "idle_rpm": 1000,
+    "redline_rpm": 5800,
+    "redline_source": "M8 Softail rev limiter ~5750-5800 rpm. needs_confirmation — read the limiter cell in TMax Tuner.",
+    "torque_curve_unit": "[rpm, lb-ft] at the crank, at the baseline AFR/timing state",
+    "torque_curve": [
+      [1000, 92.0],
+      [1250, 103.0],
+      [1500, 112.0],
+      [1750, 119.0],
+      [2000, 125.0],
+      [2250, 130.0],
+      [2500, 133.5],
+      [2750, 136.0],
+      [3000, 138.0],
+      [3250, 139.4],
+      [3500, 140.0],
+      [3750, 139.6],
+      [4000, 138.4],
+      [4250, 136.6],
+      [4500, 134.2],
+      [4750, 131.2],
+      [5000, 127.6],
+      [5250, 124.0],
+      [5500, 119.4],
+      [5800, 112.0]
+    ],
+    "torque_curve_source": "Smooth curve drawn THROUGH the two published anchors (140 lb-ft @ 3500, and 125 hp @ 5500 -> 119.4 lb-ft @ 5500) with a typical big-inch pushrod V-twin shape either side. Interpolated in code with monotone cubic Hermite (PCHIP) so it is C1-smooth and never overshoots the anchors.",
+    "torque_curve_needs_confirmation": true
+  },
+
+  "injectors": {
+    "flow_gps": 5.5,
+    "unit": "g/s",
+    "needs_confirmation": true,
+    "source": "thundermax_nas_readme_tune_notes.md — 'Injector Scaling: Calibrated for 5.5g/sec' for base map ZZSSQXETDN100720",
+    "_why_this_matters": "Stock M8 injectors are ~4.4 g/s. Seeding the model with 4.4 instead of 5.5 inflates every duty-cycle reading by ~25% and would false-red a perfectly healthy pull."
+  },
+
+  "afr": {
+    "wot_target": 12.7,
+    "wot_target_unit": "AFR (gasoline, 14.7 = stoichiometric)",
+    "wot_target_source": "Midpoint of guardrails.AFR_WOT (12.4-12.8), the shop's validated WOT window.",
+    "stoich": 14.7,
+    "stoich_source": "Pump gasoline. (E10 is nearer 14.1; 14.7 keeps the model consistent with the AFR numbers TMax Tuner displays.)"
+  },
+
+  "gearing": {
+    "needs_confirmation": true,
+    "_confirm_these": [
+      "primary_ratio (46/34 = 1.3529 assumed)",
+      "final_drive_ratio (2.125 assumed)",
+      "the six transmission ratios",
+      "tire_rolling_circumference_m (180/55B17 rear assumed)"
+    ],
+    "source": "Standard Milwaukee-Eight Cruise Drive 6-speed ratios for the 2018+ Softail platform, back-solved so that primary * trans * final reproduces the commonly published Softail OVERALL ratios (1st ~9.59 ... 6th ~2.87). NOT read off an H-D spec sheet for the 2023 FXLRST specifically — confirm the four items in _confirm_these before trusting any mph number.",
+    "primary_ratio": 1.3529,
+    "primary_ratio_unit": "reduction (crank revs per primary-output rev), 46/34 chain",
+    "final_drive_ratio": 2.125,
+    "final_drive_ratio_unit": "reduction (trans-output revs per rear-wheel rev), belt",
+    "transmission_ratios": {
+      "1": 3.336,
+      "2": 2.313,
+      "3": 1.717,
+      "4": 1.391,
+      "5": 1.185,
+      "6": 1.0
+    },
+    "transmission_ratios_unit": "reduction (input revs per output rev)",
+    "_gear_note": "On the Cruise Drive, 6th is the true 1.000:1 and 5th (1.185) is the nearest ratio below it. The virtual dyno defaults to gear 5 (spec default) because a top-gear pull is too slow to reach redline inside a 20 s window. The gear used is echoed in every sample and in the summary.",
+    "tire_rear": "180/55B17",
+    "tire_rolling_circumference_m": 1.93,
+    "tire_rolling_circumference_unit": "m per rear-wheel revolution (loaded/rolling, not free geometric)",
+    "tire_source": "180/55-17 geometric circumference is 1.978 m; loaded rolling circumference is ~1.92-1.94 m. 1.93 assumed."
+  },
+
+  "vehicle": {
+    "_note": "Used ONLY to turn torque into an rpm-vs-time ramp so the gauges sweep at a believable rate. It does not affect torque, hp, AFR, duty or knock.",
+    "mass_kg": 408.0,
+    "mass_kg_unit": "kg (bike wet ~318 kg / 700 lb + ~90 kg rider)",
+    "mass_needs_confirmation": true,
+    "driveline_efficiency": 0.90,
+    "driveline_efficiency_unit": "fraction (crank -> rear wheel, chain primary + belt final)",
+    "cda_m2": 0.65,
+    "cda_m2_unit": "m^2 (drag coefficient x frontal area; rider tucked behind the ST fairing)",
+    "rolling_resistance_coeff": 0.015,
+    "rolling_resistance_coeff_unit": "dimensionless (Crr, motorcycle tyre on asphalt)"
+  },
+
+  "conditions_default": {
+    "ambient_f": 75.0,
+    "ambient_f_unit": "degF — ambient air temperature",
+    "iat_f": null,
+    "iat_f_unit": "degF — intake air temperature; when null the model uses ambient_f + iat_rise_f",
+    "iat_rise_f": 0.0,
+    "iat_rise_f_note": "Airbox heat soak on an M8 is real (often +10 to +25 degF) but unmeasured here, so the default rise is 0. Supply a measured iat_f from a datalog for a better duty number.",
+    "baro_inhg": 29.92,
+    "baro_inhg_unit": "inHg — absolute barometric pressure (29.92 = ISA sea level)",
+    "cht_f": 220.0,
+    "cht_f_unit": "degF — cylinder head temperature",
+    "cht_f_note": "STATIC INPUT ECHO. CHT cannot be simulated meaningfully over a 15 s pull, so the dyno echoes this constant in every frame and flags it at t=0 if it is already past a guardrail gate (200 / 226 / 280 degF). 220 degF default = hot air-cooled twin, just under the 226 degF heat-retard knee."
+  },
+
+  "pull": {
+    "start_rpm": 2500,
+    "tps_pct": 100.0,
+    "tps_pct_note": "A pull is wide-open throttle by definition.",
+    "sample_hz": 20,
+    "max_seconds": 20.0,
+    "min_seconds_expected": 10.0,
+    "default_gear": 5
+  },
+
+  "band_edge": {
+    "_note": "Worst-case band-edge envelope: a changed cell that borders an unchanged cell blends across the boundary, so the real bike can see part of the change slightly outside the band Joshua typed. The dyno re-runs the pull with every band widened by one cell in each direction and labels any NEW finding 'worst-case band edge'.",
+    "rpm_cell": 256,
+    "rpm_cell_unit": "rpm — TMax rpm-axis step. Inferred from the house decel-pop bands in guardrails.py (2048/2816/3840/4608 are all multiples of 256).",
+    "tps_cell": 10.0,
+    "tps_cell_unit": "%TPS — assumed column width of the TMax rpm x TPS grid",
+    "needs_confirmation": true
+  },
+
+  "banner": "DIRECTIONAL ONLY — this is a first-order physics model, NOT a dyno. It shows which way a change moves things and roughly how far. Nothing here replaces a validation ride or a real dyno sheet."
+}
