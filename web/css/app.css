@@ -195,3 +195,7 @@ table.data th { color: var(--mut); font-weight: 600; font-size: 11px; text-trans
 h1.page { font-size: 18px; margin: 2px 0 14px; }
 .muted { color: var(--mut); }
 .mono { font-variant-numeric: tabular-nums; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; }
+.afr-grid { display: flex; flex-wrap: wrap; gap: 4px 6px; margin-top: 8px; }
+.afr-grid span { background: var(--panel2); padding: 2px 6px; border-radius: 4px; }
+.afr-grid .afr-rich { color: var(--bad); }
+.afr-grid .afr-lean { color: var(--warn); }

@@ -21,12 +21,15 @@ earlier Grok/ChatGPT ("Throttle Logic") sessions whose source code was lost.
 - `COLLABORATION.md` — primary path: state, format knowledge, house rules (read first)
 - `HANDOFF_FROM_GROK.md` — reconstructed context from the original Grok/ChatGPT era
 - `README.md` — quick start
-- `src/thundermax_parser.py` — TBW binary parser (stdlib only): `info`, `report`,
-  `compare` (now labels changed regions with named tables), `scan` subcommands
+- `src/thundermax_parser.py` — TBW binary parser (stdlib only): `info` (now
+  prints PPM catalog lookup), `report`, `compare`, `scan`
+- `src/ppm_catalog.py` + `data/basemapdefs/BASEMAPDEFSM8.PPM` — 16-char ID
+  answer key (`tmax catalog`). Not NetPBM; not AFR cells.
 - `src/table_map.py` — names the byte regions of a tune: `bands`, `classify A B`,
   `derive <folder>`. Reads `src/tables.json`.
+- `src/tbw_read.py` — `tmax read`: FID 0x20 fuel/VE, 0x26 timing, 0x29 AFR
 - `src/tables.json` — frozen table-band map (offset ranges → AFR/fuel/timing/
-  autotune/metadata, with confidence tiers and `needs_ground_truth` notes)
+  autotune/metadata, with confidence tiers, `fid` tags, and `needs_ground_truth` notes)
 - `src/tune_assistant.py` — Ollama-backed assistant: `ask`, `chat`, `analyze`,
   `learn`, `sync`; server at `127.0.0.1:11434`. Auto-routes per question — quick
   lookups → `qwen2.5-coder:14b` (fast, on GPU), deep tuning strategy / `analyze`

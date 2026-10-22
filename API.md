@@ -34,7 +34,11 @@ is needed (static files are read per request); after editing `src/`,
 | POST | `/api/chat/messages` | start a chat turn |
 | GET  | `/api/chat/stream/{id}` | **SSE** tokens |
 | GET  | `/api/tunes` | library (USB + Desktop + NAS) |
-| GET  | `/api/tunes/diff` | visual/table-classified diff |
+| GET  | `/api/tunes/claimed/read` | decode claimed on-ECM AFR (50 raw/AFR) |
+| GET  | `/api/tunes/<sha1>/read` | decoded AFR + landmark. `?full=1` raw cells. `?vs=<sha1>` AFR-point diff. Never writes. |
+| GET  | `/api/tunes/<sha1>/propose?kind=afr-audit` | TMax click-list. Does not write a `.tbw`. |
+| GET  | `/api/tunes/<sha1>` | cached tune metadata + AFR summary |
+| GET  | `/api/tunes/diff` | labeled-region diff + `afr_diff` in AFR points |
 | GET/POST | `/api/journal` | shop notes |
 | GET/POST | `/api/proposals` | proposed edits |
 | POST | `/api/proposals/{id}/vet` | `guardrails.py` verdict |

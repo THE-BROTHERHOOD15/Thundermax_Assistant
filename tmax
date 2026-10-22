@@ -2,7 +2,12 @@
 # tmax — single entry point for the ThunderMax tuning assistant.
 #
 #   Parser (offline, no deps):
-#     tmax info <tune.tbw>              validate + metadata
+#     tmax info <tune.tbw>              validate + metadata + PPM catalog lookup
+#     tmax catalog [ID|.tbw]            M8 base-map ID answer key (BASEMAPDEFSM8.PPM)
+#     tmax read <tune.tbw>              FID 0x20 fuel/VE, 0x26 timing, 0x29 AFR
+#     tmax read <tune.tbw> --vs other   AFR diff in AFR points (not raw)
+#     tmax read <tune.tbw> --propose [afr-audit|decel-pop|all]
+#     tmax train brief|quiz|drill|ingest|seat|all
 #     tmax compare <old.tbw> <new.tbw>  diff with named-table labels
 #     tmax report <tune.tbw> [-o out]   decode-report skeleton
 #     tmax scan <folder> [-o out]       index a tune folder
@@ -19,13 +24,24 @@
 #     tmax learn "note" | --file X      add knowledge to the KB
 #     tmax sync <folder>                fold matching .tbw tunes into the KB
 #
-#   ECM pointer (claimed what's on the bike — copies files, never hex-edits):
+#   Knowledge base (immutable originals + sqlite FTS5 + hybrid retrieve):
+#     tmax kb init                      create ~/thundermax-kb
+#     tmax kb ingest PATH [--embed]     copy into archive (never writes .tbw)
+#     tmax kb retrieve "question"       evidence bundle
+#     tmax kb status | views | eval | backup
+#
+#   ECM pointer (what is claimed on the bike — copies files, never hex-edits):
 #     tmax ecm show
 #     tmax ecm bag FILE.tbw
 #     tmax ecm complaint "why we are touching this map"
 #     tmax ecm compare FILE.tbw [--vs last_known_good|on_ecm|last_pull]
-#     tmax ecm stage-flash FILE.tbw
-#     tmax ecm record-flash FILE.tbw
+#     tmax ecm stage-flash FILE.tbw     copy to to-windows; still not a WRITE
+#     tmax ecm record-flash FILE.tbw    after Joshua confirms WRITE
+#
+#   Studio capabilities (read-only; never writes a .tbw):
+#     tmax log FILE.csv                 fuel % suggestions from a text ride log
+#     tmax notes get FILE.tbw           note stored by SHA-256
+#     tmax notes set FILE.tbw --feel "pop on decel"
 #
 #   Housekeeping:
 #     tmax verify                       run the self-check suite
@@ -62,6 +78,12 @@ shift 2>/dev/null || true
 case "$cmd" in
   info|report|compare|scan)
     exec python3 "$SRC/thundermax_parser.py" "$cmd" "$@" ;;
+  catalog)
+    exec python3 "$SRC/ppm_catalog.py" "$@" ;;
+  read)
+    exec python3 "$SRC/tbw_read.py" "$@" ;;
+  train)
+    exec python3 "$SRC/tbw_train.py" "$@" ;;
   bands|classify|derive)
     exec python3 "$SRC/table_map.py" "$cmd" "$@" ;;
   ask|chat|analyze)
@@ -71,12 +93,16 @@ case "$cmd" in
   learn|sync)
     # read-only on .tbw; no Ollama required
     exec python3 "$SRC/tune_assistant.py" "$cmd" "$@" ;;
+  kb)
+    exec python3 "$SRC/kb/cli.py" "$@" ;;
   ecm)
     exec python3 "$SRC/ecm_state.py" "$@" ;;
+  log|notes)
+    exec python3 "$SRC/studio_caps.py" "$cmd" "$@" ;;
   verify)
     exec "$ROOT/scripts/verify.sh" ;;
   help|-h|--help)
-    sed -n '2,36p' "$0" | sed 's/^# \{0,1\}//' ;;
+    sed -n '2,49p' "$0" | sed 's/^# \{0,1\}//' ;;
   *)
     echo "tmax: unknown command '$cmd' (try: tmax help)" >&2
     exit 2 ;;

@@ -1,7 +1,10 @@
 {
   "schema": 1,
-  "updated_at": "2026-08-30T08:07:53Z",
-  "complaint": null,
+  "updated_at": "2026-09-27T09:41:13Z",
+  "complaint": {
+    "text": "surge at roughly 2-7% throttle, not rpm",
+    "opened_at": "2026-09-27T09:41:13Z"
+  },
   "on_ecm": {
     "path": "/home/joshua/tmax-exchange/tunes-from-usb-2026-08-19/TMAX_TUNES/M8_131_550CAM_63inj.tbw",
     "name": "M8_131_550CAM_63inj.tbw",
@@ -56,7 +59,25 @@
     "confidence": "file-claimed",
     "note": "Present on the TMAX USB stick 2026-08-19 with FuelMoto original and CH-home autotune. Stick inventory, not confirmed as an ECM dump. NAS currenttune.tbw is a different base map (HYSSPVCAHN051320) \u2014 do not use it as current flash."
   },
-  "last_bagged": null,
+  "last_bagged": {
+    "path": "/home/joshua/tmax-exchange/bagged/MLOG-SRN709108502-FRM6a250722 Sun 27-09-26 030623AM.tbw",
+    "name": "MLOG-SRN709108502-FRM6a250722 Sun 27-09-26 030623AM.tbw",
+    "sha256": "fe757409352fd56d86cc1250b90865361e543903a5ad4a7a2eb2fdad2ed954bf",
+    "base_map_id": "HYSSPVCAHN051320",
+    "size": 214967,
+    "header": [
+      "0x8B",
+      "0x4000",
+      "0x1",
+      "0x148"
+    ],
+    "valid": true,
+    "as_of": "2026-09-27T08:48:08Z",
+    "source": "bag",
+    "confidence": "file-copy",
+    "nas_path": "/mnt/nas/ADMIN/LOCAL NAS/THROTTLE LOGIC/MLOG-SRN709108502-FRM6a250722 Sun 27-09-26 030623AM.tbw",
+    "note": "original frozen; never overwrite"
+  },
   "staged_flash": null,
   "history": [
     {
@@ -64,6 +85,198 @@
       "action": "seed",
       "name": "M8_131_550CAM_63inj.tbw",
       "sha256": "2893e3f4c759ded5f1e52a19ae7fe38bae0ed71c00c6adca73b329aa34228138"
+    },
+    {
+      "at": "2026-09-16T21:04:18Z",
+      "action": "bag",
+      "name": "M8_131_CAM2_63inj fuelmoto origional.tbw",
+      "sha256": "2702c01574c6e08bea6c3d289032598df24c54b31b6b623af1acb787b793dad9"
+    },
+    {
+      "at": "2026-09-16T21:13:45Z",
+      "action": "bag",
+      "name": "M8_131_550CAM_63inj.tbw",
+      "sha256": "2893e3f4c759ded5f1e52a19ae7fe38bae0ed71c00c6adca73b329aa34228138"
+    },
+    {
+      "at": "2026-09-16T21:56:02Z",
+      "action": "bag",
+      "name": "FLASH THIS - 131 STEADY 35 SMOOTH 08-08.tbw",
+      "sha256": "c375e25eea8b28789537f7699ef971b5c6ae02ad252ef234f56a195aaf1631b3"
+    },
+    {
+      "at": "2026-09-16T21:56:02Z",
+      "action": "bag",
+      "name": "petemaconautomap.tbw",
+      "sha256": "b3a18036564026f314b71db26bf448dae82256b29ab58a6c01f17df6af6b8657"
+    },
+    {
+      "at": "2026-09-16T22:08:40Z",
+      "action": "bag",
+      "name": "current tune.tbw",
+      "sha256": "0d923ee7e260e987dd8722fca826cb1310ed8ae495817b044e061ce47ab1ec70"
+    },
+    {
+      "at": "2026-09-16T22:08:40Z",
+      "action": "bag",
+      "name": "current tune fule trims.tbw",
+      "sha256": "0d923ee7e260e987dd8722fca826cb1310ed8ae495817b044e061ce47ab1ec70"
+    },
+    {
+      "at": "2026-09-16T22:10:48Z",
+      "action": "bag",
+      "name": "current tune.tbw",
+      "sha256": "0d923ee7e260e987dd8722fca826cb1310ed8ae495817b044e061ce47ab1ec70"
+    },
+    {
+      "at": "2026-09-17T15:51:34Z",
+      "action": "bag",
+      "name": "cool night and bike stayedunder 250 degrees but surged above3000rpm-4500 rpm.tbw",
+      "sha256": "063284d5fab2366f0a708f9d6d501b24ffed393f9e673a9decebbdeb0709c3b1"
+    },
+    {
+      "at": "2026-09-17T21:23:41Z",
+      "action": "bag",
+      "name": "cool-night-20260917-surge-ve-plus2.tbw",
+      "sha256": "bf62fa5a9ba68fae9be12cb346ec5be74cea1f7fb753ac8fd6301b47d6801b73"
+    },
+    {
+      "at": "2026-09-18T22:20:12Z",
+      "action": "bag",
+      "name": "WriteMap SRN-709108502 [cool-night-20260917-surge-ve-plus2]  09172026-082643PM.tbw",
+      "sha256": "a2ae73badb34883f27cc2ee31d396b3b0b982d239aefca70965b05d303f3c9f8"
+    },
+    {
+      "at": "2026-09-18T22:21:31Z",
+      "action": "bag",
+      "name": "WriteMap SRN-709108502 [cool-night-20260917-surge-ve-plus2]  09172026-082643PM.tbw",
+      "sha256": "a2ae73badb34883f27cc2ee31d396b3b0b982d239aefca70965b05d303f3c9f8"
+    },
+    {
+      "at": "2026-09-18T22:21:43Z",
+      "action": "bag",
+      "name": "SRN-709108502_20260917-2219-support-data.tbw",
+      "sha256": "ea8f80de0228206f60e758440cc2204548a9c0948203999d0110f0646305531e"
+    },
+    {
+      "at": "2026-09-18T22:38:58Z",
+      "action": "bag",
+      "name": "FLASH THIS - 131 Low Rider ST-183858.tbw",
+      "sha256": "bf62fa5a9ba68fae9be12cb346ec5be74cea1f7fb753ac8fd6301b47d6801b73"
+    },
+    {
+      "at": "2026-09-18T23:08:01Z",
+      "action": "bag",
+      "name": "cool-night-20260918-surge-smooth.tbw",
+      "sha256": "6aaaf957b04555dbfc07e796fcb128acb2b3171cd154e1212b98d11594962c38"
+    },
+    {
+      "at": "2026-09-20T12:44:00Z",
+      "action": "bag",
+      "name": "cool-night-20260919-instant-throttle.tbw",
+      "sha256": "5e1ea2f7b0722e670c3dacd2bdc93bfa6acdc861f4e9aed64639123a5ea10583"
+    },
+    {
+      "at": "2026-09-20T12:44:00Z",
+      "action": "bag",
+      "name": "WriteMap SRN-709108502 [newest idle autotune cool night and bike stayedunder 250 degrees but surged above3000rpm-4500 rpm]  09192026-040100PM.tbw",
+      "sha256": "f0a6e03e9db51389a58078a04088497a77c8dfc333e777789fb591ad2b051f01"
+    },
+    {
+      "at": "2026-09-20T12:44:00Z",
+      "action": "bag",
+      "name": "SRN-709108502_September 20 2026.tbw",
+      "sha256": "3d5ab2988d96415c2f4cab04963534649d479b3fec308fd4048ce7c2d49b5c1b"
+    },
+    {
+      "at": "2026-09-20T12:44:28Z",
+      "action": "bag",
+      "name": "WriteMap SRN-709108502 [newest cool night and bike stayedunder 250 degrees but surged above3000rpm-4500 rpm]  09192026-034426PM.tbw",
+      "sha256": "e58bfc9a59bd338cba75179639e8ed15679bd356d1115a5432f1791f8575af75"
+    },
+    {
+      "at": "2026-09-20T12:44:28Z",
+      "action": "bag",
+      "name": "cool-night-20260919-instant-throttle.tbw",
+      "sha256": "5e1ea2f7b0722e670c3dacd2bdc93bfa6acdc861f4e9aed64639123a5ea10583"
+    },
+    {
+      "at": "2026-09-20T12:44:28Z",
+      "action": "bag",
+      "name": "WriteMap SRN-709108502 [newest idle autotune cool night and bike stayedunder 250 degrees but surged above3000rpm-4500 rpm]  09192026-040100PM.tbw",
+      "sha256": "f0a6e03e9db51389a58078a04088497a77c8dfc333e777789fb591ad2b051f01"
+    },
+    {
+      "at": "2026-09-20T12:44:28Z",
+      "action": "bag",
+      "name": "SRN-709108502_September 20 2026.tbw",
+      "sha256": "3d5ab2988d96415c2f4cab04963534649d479b3fec308fd4048ce7c2d49b5c1b"
+    },
+    {
+      "at": "2026-09-20T12:44:28Z",
+      "action": "bag",
+      "name": "WriteMap SRN-709108502 [cool-night-20260918-surge-smooth]  09192026-080645AM.tbw",
+      "sha256": "8bf7646c2d21ece878e7f2dfea658ad86c9480a48562e93835d0b77b7363bfb4"
+    },
+    {
+      "at": "2026-09-20T12:44:34Z",
+      "action": "bag",
+      "name": "WriteMap SRN-709108502 [newest idle autotune cool night and bike stayedunder 250 degrees but surged above3000rpm-4500 rpm]  09192026-040100PM.tbw",
+      "sha256": "f0a6e03e9db51389a58078a04088497a77c8dfc333e777789fb591ad2b051f01"
+    },
+    {
+      "at": "2026-09-20T12:44:34Z",
+      "action": "bag",
+      "name": "WriteMap SRN-709108502 [newest cool night and bike stayedunder 250 degrees but surged above3000rpm-4500 rpm]  09192026-034426PM.tbw",
+      "sha256": "e58bfc9a59bd338cba75179639e8ed15679bd356d1115a5432f1791f8575af75"
+    },
+    {
+      "at": "2026-09-20T12:44:34Z",
+      "action": "bag",
+      "name": "WriteMap SRN-709108502 [cool-night-20260918-surge-smooth]  09192026-080645AM.tbw",
+      "sha256": "8bf7646c2d21ece878e7f2dfea658ad86c9480a48562e93835d0b77b7363bfb4"
+    },
+    {
+      "at": "2026-09-20T12:44:34Z",
+      "action": "bag",
+      "name": "SRN-709108502_September 20 2026.tbw",
+      "sha256": "3d5ab2988d96415c2f4cab04963534649d479b3fec308fd4048ce7c2d49b5c1b"
+    },
+    {
+      "at": "2026-09-20T12:44:34Z",
+      "action": "bag",
+      "name": "cool-night-20260919-instant-throttle.tbw",
+      "sha256": "5e1ea2f7b0722e670c3dacd2bdc93bfa6acdc861f4e9aed64639123a5ea10583"
+    },
+    {
+      "at": "2026-09-20T12:44:34Z",
+      "action": "bag",
+      "name": "FLASH THIS - 131 Low Rider ST.tbw",
+      "sha256": "5e1ea2f7b0722e670c3dacd2bdc93bfa6acdc861f4e9aed64639123a5ea10583"
+    },
+    {
+      "at": "2026-09-20T12:44:34Z",
+      "action": "bag",
+      "name": "ReadMap SRN-709108502 [newest cool night and bike stayedunder 250 degrees but surged above3000rpm-4500 rpm]  09192026-035056PM.tbw",
+      "sha256": "f0a6e03e9db51389a58078a04088497a77c8dfc333e777789fb591ad2b051f01"
+    },
+    {
+      "at": "2026-09-20T17:13:15Z",
+      "action": "bag",
+      "name": "cool-night-20260920-tps2-6.tbw",
+      "sha256": "8160f93ca4514793118ab0e0e74b9156613f76ccb7f705d4ce8290dc1cccea22"
+    },
+    {
+      "at": "2026-09-27T08:48:08Z",
+      "action": "bag",
+      "name": "WriteMap SRN-709108502 [FLASH THIS - 131 Low Rider ST]  09272026-015754AM.tbw",
+      "sha256": "45f3a1671f4a0d3851f47c8feabe4e4e19d4ce068ff3c7ae67649006c896fcb3"
+    },
+    {
+      "at": "2026-09-27T08:48:08Z",
+      "action": "bag",
+      "name": "MLOG-SRN709108502-FRM6a250722 Sun 27-09-26 030623AM.tbw",
+      "sha256": "fe757409352fd56d86cc1250b90865361e543903a5ad4a7a2eb2fdad2ed954bf"
     }
   ]
 }

@@ -26,14 +26,16 @@ echo
 # 1. Required files
 for f in README.md COLLABORATION.md tmax src/thundermax_parser.py \
          src/tune_assistant.py src/table_map.py src/tables.json \
+         src/tbw_read.py src/tbw_train.py train/CURRICULUM.md \
          src/ecm_state.py data/ecm_state.json tests/test_ecm_state.py \
-         tests/test_thundermax.py; do
+         tests/test_thundermax.py tests/test_kb.py src/kb/ingest.py src/kb/retrieve.py \
+         src/studio_caps.py tests/test_studio_caps.py; do
   if [ -f "$f" ]; then pass "exists: $f"; else fail "missing: $f"; fi
 done
 if [ -x tmax ]; then pass "executable: tmax"; else fail "tmax not executable (chmod +x tmax)"; fi
 
 # 2. Python syntax check (compile only, nothing executed)
-for py in src/*.py; do
+for py in src/*.py src/kb/*.py; do
   if python3 -m py_compile "$py" 2>/dev/null; then
     pass "syntax ok: $py"
   else

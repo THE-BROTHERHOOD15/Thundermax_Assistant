@@ -325,6 +325,12 @@ def main(argv=None):
         print(f"size:        {len(t.data)} bytes ({'known' if t.size_ok else 'UNEXPECTED'})")
         print(f"header:      {' '.join(f'0x{w_:X}' for w_ in t.header)}")
         print(f"valid:       {t.valid}")
+        try:
+            import ppm_catalog
+            for line in ppm_catalog.format_lookup(ppm_catalog.lookup(t.base_map_id)):
+                print(line)
+        except (OSError, ValueError) as e:
+            print(f"catalog:     (PPM lookup skipped: {e})")
         return 0 if t.valid else 1
     if args.cmd == "report":
         t = TbwFile(args.file)

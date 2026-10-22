@@ -52,6 +52,9 @@ function renderHealth(card, h) {
     tile('NAS', h.nas?.ok ? `${h.nas.tunes_visible} tunes` : 'offline', h.nas?.ok),
     tile('Tune index', h.tune_index?.count ? `${h.tune_index.count} · ${fmtAgo(h.tune_index.age_s)}` : 'empty', h.tune_index?.count > 0),
     tile('Corpus', `${h.corpus_docs} docs`, h.keyword_leg),
+    tile('AFR decoder', h.decoder?.ok
+      ? `50 raw/AFR · n=${h.decoder.claimed?.summary?.n ?? '—'} min=${h.decoder.claimed?.summary?.min ?? '—'}`
+      : (h.decoder?.error || 'down'), h.decoder?.ok),
     tile('Disk free', `${h.disk_free_gb} GB`, h.disk_free_gb > 5),
   );
   card.append(tiles);

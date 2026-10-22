@@ -7,16 +7,18 @@ import * as tunes from '/js/views/tunes.js';
 import * as journal from '/js/views/journal.js';
 import * as proposals from '/js/views/proposals.js';
 import * as dyno from '/js/views/dyno.js';
+import * as lenovo from '/js/views/lenovo.js';
 
 const VIEWS = {
   dashboard: { mod: dashboard, label: 'Dashboard', ico: '⌂' },
   chat: { mod: chat, label: 'Co-pilot', ico: '💬' },
   tunes: { mod: tunes, label: 'Tunes', ico: '⛭' },
+  lenovo: { mod: lenovo, label: 'Lenovo', ico: '⇄' },
   journal: { mod: journal, label: 'Journal', ico: '✎' },
   proposals: { mod: proposals, label: 'Proposals', ico: '☑' },
   dyno: { mod: dyno, label: 'Dyno', ico: '◉' },
 };
-const MOBILE_TABS = ['dashboard', 'chat', 'tunes', 'journal', 'proposals', 'dyno'];
+const MOBILE_TABS = ['dashboard', 'chat', 'tunes', 'lenovo', 'journal', 'proposals'];
 
 export const state = { profile: null, health: null };
 

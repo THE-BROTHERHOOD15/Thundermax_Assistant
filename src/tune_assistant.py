@@ -103,10 +103,14 @@ confidence tier (from the project's reverse-engineered table map):
   pages), AUTOTUNE (learned trims - churns on every ride, usually not a
   deliberate edit), METADATA/SHARED (checksums - ignore), UNMAPPED.
 - Confidence: high = trust the label; medium = right category, cell-level
-  detail unproven; low = located only. Timing scale is ~49 raw units per
-  degree (medium confidence). Raw cell values are NOT yet in engineering
-  units - never quote AFR/degree numbers from raw deltas; describe the
-  direction and location of changes instead.
+  detail unproven; low = located only.
+- AFR: signed i16 from 0x1981, **50 raw = 1.00 AFR** (high; AFR-correction
+  pair). Dump with `tmax read FILE.tbw`. Axis (RPM/TPS) is unconfirmed —
+  quote AFR numbers, do not invent cell coordinates.
+- Timing-limit array: ~49 raw/deg (medium). Main RPM×TPS timing map scale
+  is NOT locked — do not quote those cells as degrees.
+- Landmark 0b00100000 (32, 0x20) tails the AFR band on 225718-byte 0x84
+  files. Never hex-edit a .tbw; apply changes in TMax Tuner Save As.
 
 CRITICAL - this is a FUEL-INJECTED bike: the ThunderMax TBW ECM controls
 electronic fuel injection and a throttle-by-wire body. There is NO carburetor,
@@ -132,6 +136,18 @@ table cells (TPS/RPM ranges) and say when a dyno or validation ride is
 required. Never guess numbers you cannot support. If the reference excerpts do
 not contain what is needed to answer, say so plainly and state what log or data
 you would need - do NOT fill the gap with generic carbureted-engine advice.
+
+RETRIEVAL (mandatory):
+Before answering a technical question, identify the current vehicle, engine,
+hardware, fuel, module, firmware, operating conditions, and objective.
+Retrieve by metadata before semantic similarity. Prefer same-configuration
+validated evidence over general similarity. Do not treat a similar vehicle as
+the same vehicle. Cite file_id and chunk_id. Distinguish observed facts,
+inferred explanations, historical notes, and validated rules. If sources
+conflict, show the conflict. If no sufficiently similar evidence exists, say
+so and recommend the smallest safe next data-collection step. Never use an
+unreadable or encrypted file as if its contents were known. Never fabricate
+map values, decoded fields, sensor results, or validation.
 """
 
 
@@ -214,11 +230,14 @@ def scored_passages(question, profile=None):
 
 
 def relevant_context(question, budget=MAX_CONTEXT_CHARS):
-    """Chunk-level retrieval: score individual passages by keyword overlap and
-    pack the best excerpts first. Rewarding breadth of match (how many distinct
-    query terms a passage touches) keeps an on-topic paragraph ahead of a doc
-    that merely repeats one common word (e.g. 'rpm') many times - the failure
-    that let a surge question pull generic timing pages instead of the answer."""
+    """Hybrid KB retrieval first (metadata + FTS5), then corpus keyword overlap."""
+    try:
+        from kb.retrieve import retrieve_context
+        ctx = retrieve_context(question, profile=PROFILE, budget=budget, embed=False)
+        if ctx:
+            return ctx
+    except Exception:
+        pass
     scored = scored_passages(question)
     parts, used, seen = [], 0, set()
     for _, name, passage in scored:
@@ -341,8 +360,14 @@ SHOP FACTS — if these answer the question, stop; do not invent a flash procedu
 
 def build_messages(question, extra_context=""):
     context = relevant_context(question)
+    decoded_ctx = ""
+    try:
+        import tbw_read as _tbw
+        decoded_ctx = _tbw.claimed_file_context(question) or ""
+    except Exception:
+        decoded_ctx = ""
     user = question
-    blocks = [b for b in (extra_context, context) if b]
+    blocks = [b for b in (decoded_ctx, extra_context, context) if b]
     body = f"{HOUSE_CARD}\nQuestion: {question}"
     if blocks:
         body = (
@@ -519,6 +544,17 @@ def learn_write(title, content, source="manual", setup=None):
         f"---\ntype: learned\nsetup: {setup}\ntitle: {title}\n"
         f"source: {source}\ndate: {_today()}\n---\n\n{content.strip()}\n"
     )
+    try:
+        from kb.ingest import ingest_path
+        ingest_path(path, source="learn", extra={
+            "vehicle_key": "2023-fxlrst",
+            "engine_key": "131ci",
+            "hardware_key": "ss550-63inj-2into1",
+            "project_key": setup,
+            "tags": ["needs-validation"],
+        })
+    except Exception:
+        pass
     return path
 
 

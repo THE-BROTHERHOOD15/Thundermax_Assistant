@@ -246,6 +246,45 @@ def h_tune(h, sha1):
     h._json(d if d else {"error": "not cached"}, 200 if d else 404)
 
 
+def h_tune_read(h, sha1):
+    q = parse_qs(urlparse(h.path).query)
+    full = (q.get("full") or ["0"])[0] in ("1", "true", "yes")
+    vs = (q.get("vs") or [""])[0]
+    d = core.tune_read(sha1, full=full)
+    if not d.get("ok"):
+        return h._json(d, 404)
+    if vs and len(vs) == 40:
+        other = core.tune_read(vs)
+        if other.get("ok"):
+            try:
+                import tbw_read
+                da = tbw_read.read_tune(str(core.cache_path(sha1)))
+                db = tbw_read.read_tune(str(core.cache_path(vs)))
+                d["vs"] = vs
+                d["afr_diff"] = tbw_read.afr_diff(da, db)
+            except Exception as e:
+                d["afr_diff_error"] = str(e)
+    h._json(d)
+
+
+def h_claimed_read(h):
+    d = core.claimed_tune_read()
+    h._json(d, 200 if d.get("ok") else 404)
+
+
+def h_tune_propose(h, sha1):
+    q = parse_qs(urlparse(h.path).query)
+    kind = (q.get("kind") or ["afr-audit"])[0]
+    if kind not in ("afr-audit", "decel-pop", "all"):
+        kind = "afr-audit"
+    d = core.tune_read(sha1)
+    if not d.get("ok"):
+        return h._json(d, 404)
+    import tbw_read
+    decoded = tbw_read.read_tune(str(core.cache_path(sha1)))
+    h._json(tbw_read.propose_from_read(decoded, kind))
+
+
 def h_tunes_diff(h):
     q = parse_qs(urlparse(h.path).query)
     a, b = (q.get("a") or [""])[0], (q.get("b") or [""])[0]
@@ -347,6 +386,9 @@ ROUTES = [
     ("GET", r"/api/chat/sessions/([\w-]+)", h_session),
     ("GET", r"/api/tunes", h_tunes),
     ("POST", r"/api/tunes/refresh", h_tunes_refresh),
+    ("GET", r"/api/tunes/claimed/read", h_claimed_read),
+    ("GET", r"/api/tunes/([0-9a-f]{40})/read", h_tune_read),
+    ("GET", r"/api/tunes/([0-9a-f]{40})/propose", h_tune_propose),
     ("GET", r"/api/tunes/([0-9a-f]{40})", h_tune),
     ("GET", r"/api/tunes/diff", h_tunes_diff),
     ("POST", r"/api/tunes/sync", h_tunes_sync),

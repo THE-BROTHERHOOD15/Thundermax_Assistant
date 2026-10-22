@@ -33,6 +33,7 @@ sys.path.insert(0, str(HERMES))
 
 import tune_assistant as ta  # noqa: E402
 import guardrails  # noqa: E402
+import tbw_read  # noqa: E402
 
 # hermes_rag is imported for its CONSTANTS (ES endpoint, index name, tiers);
 # we re-implement its two HTTP calls with short explicit timeouts rather than
@@ -54,10 +55,11 @@ DIFF_CACHE = DATA / "diff_cache"
 JOURNAL_DIR = DATA / "journal"
 PROPOSALS_DIR = DATA / "proposals"
 TUNELOG_DIR = HERMES / "tune-log"
-# Tune libraries (read-only). USB 2026-08-19 pull + Desktop saves are the
-# live shop copies; NAS path is optional and often hung. Never write .tbw.
+# Tune libraries (read-only). USB 2026-08-19 pull + Desktop saves + laptop
+# drop folder. NAS path is optional and often hung. Never write .tbw.
 _DEFAULT_TUNE_DIRS = [
     Path.home() / "tmax-exchange" / "tunes-from-usb-2026-08-19",
+    Path.home() / "tmax-exchange" / "from-laptop",
     Path.home() / "Desktop",
     Path("/mnt/nas/ADMIN/LOCAL NAS/THROTTLE LOGIC"),
 ]
@@ -180,6 +182,7 @@ def health():
                            if n.lower().endswith(".tbw") and not n.startswith("._"))
         elif nas_err is None:
             nas_err = f"{d}: {listing.get('error')}"
+    h["decoder"] = decoder_status()
     h["nas"] = ({"ok": True, "tunes_visible": visible, "dirs": [str(d) for d in tune_dirs()]}
                 if nas_ok else {"ok": False, "error": nas_err or "no tune dirs"})
     idx = tune_index_path()
@@ -188,6 +191,11 @@ def health():
                        if idx.exists() else {"age_s": None, "count": 0})
     h["corpus_docs"] = len(ta.find_docs()) if KEYWORD_LEG_OK else 0
     h["keyword_leg"] = KEYWORD_LEG_OK
+    try:
+        from kb.store import status as kb_status
+        h["kb"] = kb_status()
+    except Exception as e:
+        h["kb"] = {"ok": False, "error": str(e)}
     du = shutil.disk_usage(DATA if DATA.exists() else ROOT)
     h["disk_free_gb"] = round(du.free / 1e9, 1)
     h["ok"] = h["ollama"]["ok"]
@@ -228,23 +236,39 @@ def _vector_leg(question, k=10):
 
 
 def unified_retrieve(question, profile=None):
-    """Merge both retrieval brains. Returns (citations, context_block, degraded).
+    """Merge KB hybrid + ES vector + corpus keyword. Returns (citations, context, degraded).
     Vector leg failure of ANY kind degrades to keyword-only, visibly."""
     degraded = None
+    kb_hits = []
+    try:
+        from kb.retrieve import citations_for_ui
+        kb_hits, _bundle = citations_for_ui(question, profile=profile or ta.PROFILE)
+    except Exception as e:
+        degraded = f"kb retrieve unavailable ({e.__class__.__name__})"
     vec_hits = []
     try:
         vec_hits = _vector_leg(question)
     except Exception as e:
-        degraded = f"vector search unavailable ({e.__class__.__name__}) — keyword-only"
+        extra = f"vector search unavailable ({e.__class__.__name__}) — keyword-only"
+        degraded = f"{degraded}; {extra}" if degraded else extra
     kw_hits = []
     if KEYWORD_LEG_OK:
         for score, name, passage in ta.scored_passages(question, profile=profile)[:20]:
             kw_hits.append({"text": passage, "source": name, "path": "",
                             "retriever": "keyword", "score": score})
-    elif not vec_hits:
-        degraded = "both retrieval legs unavailable — answering from model knowledge only"
-    # Interleave vector-first (it saw the whole brain), dedupe, cap context.
+    elif not vec_hits and not kb_hits:
+        degraded = "all retrieval legs unavailable — answering from model knowledge only"
+    # KB first (source-chained), then interleave vector + keyword.
     merged, seen, used = [], set(), 0
+    for h in kb_hits:
+        key = (h.get("source"), (h.get("text") or "")[:80])
+        if key in seen:
+            continue
+        if used + len(h.get("text") or "") > MAX_CONTEXT:
+            continue
+        seen.add(key)
+        used += len(h.get("text") or "")
+        merged.append(h)
     a, b = vec_hits, kw_hits
     for i in range(max(len(a), len(b))):
         for leg in (a, b):
@@ -455,6 +479,9 @@ def _generate(job, question, tier):
             return
         job.emit("status", {"phase": "retrieving"})
         citations, ctx, degraded = unified_retrieve(question)
+        decoded_ctx = decoder_context_for_question(question)
+        if decoded_ctx:
+            ctx = (decoded_ctx + "\n\n" + (ctx or "")).strip()
         if degraded:
             job.emit("status", {"phase": "degraded", "detail": degraded})
         job.emit("citations", {"citations": citations})
@@ -565,6 +592,96 @@ def cache_path(sha1):
     return TUNE_CACHE / f"{sha1}.bin"
 
 
+def read_memo_path(sha1):
+    return TUNE_CACHE / f"{sha1}.read.json"
+
+
+def decoder_status():
+    """Health for the 8-bit AFR decoder. Never touches a .tbw write."""
+    out = {
+        "ok": False,
+        "afr_scale": tbw_read.AFR_SCALE,
+        "landmark": "0b00100000",
+        "claimed": None,
+        "error": None,
+    }
+    try:
+        payload = claimed_tune_read()
+        if payload and payload.get("ok"):
+            out["ok"] = True
+            out["claimed"] = {
+                "file": payload.get("file"),
+                "summary": payload.get("afr", {}).get("summary"),
+            }
+        else:
+            out["ok"] = True  # decoder imported; claimed file may be uncached
+            out["error"] = (payload or {}).get("error") or "claimed tune not cached"
+    except Exception as e:
+        out["error"] = str(e)
+    return out
+
+
+def claimed_sha1():
+    """Map ecm_state on_ecm to a library sha1 (cache), if indexed."""
+    try:
+        st = json.loads((DATA / "ecm_state.json").read_text())
+    except (OSError, ValueError):
+        return None
+    name = (st.get("on_ecm") or {}).get("name") or ""
+    if not name:
+        return None
+    for t in load_tune_index().get("tunes", []):
+        n = t.get("name") or ""
+        if n.endswith("/" + name) or n == name or n.endswith(name):
+            return t.get("sha1")
+    return None
+
+
+def tune_read(sha1, full=False):
+    """Decode a cached tune into AFR engineering units. Read-only."""
+    if not sha1 or len(sha1) != 40:
+        return {"error": "sha1 required", "ok": False}
+    cp = cache_path(sha1)
+    if not cp.exists():
+        return {"error": "tune bytes not cached — refresh the library", "ok": False}
+    memo = read_memo_path(sha1)
+    decoded = None
+    if memo.exists():
+        try:
+            decoded = json.loads(memo.read_text())
+        except ValueError:
+            decoded = None
+    if decoded is None:
+        decoded = tbw_read.read_tune(str(cp))
+        decoded["file"] = (find_tune(sha1) or {}).get("name") or decoded.get("file")
+        with STORE_LOCK:
+            atomic_write(memo, decoded)
+    pub = tbw_read.public_payload(decoded, full=full)
+    pub["entry"] = find_tune(sha1)
+    pub["sha1"] = sha1
+    return pub
+
+
+def claimed_tune_read(full=False):
+    sha = claimed_sha1()
+    if not sha:
+        path = None
+        try:
+            st = json.loads((DATA / "ecm_state.json").read_text())
+            path = (st.get("on_ecm") or {}).get("path")
+        except (OSError, ValueError):
+            path = None
+        if path and Path(path).is_file():
+            decoded = tbw_read.read_tune(path)
+            return tbw_read.public_payload(decoded, full=full)
+        return {"ok": False, "error": "claimed on_ecm tune is not in the library cache"}
+    return tune_read(sha, full=full)
+
+
+def decoder_context_for_question(question):
+    return tbw_read.claimed_file_context(question)
+
+
 def refresh_tune_index():
     """Scan tune dirs; cache new/changed tune bytes locally by sha1.
     All library I/O happens HERE (background thread, NAS_LOCK). The index is
@@ -589,11 +706,21 @@ def refresh_tune_index():
             if "names" not in listing:
                 continue
             tag = d.name
+            files = []
             for name in sorted(listing["names"]):
-                if not name.lower().endswith(".tbw") or name.startswith("._"):
+                if name.startswith(".") or name.startswith("._"):
                     continue
-                f = d / name
-                key = f"{tag}/{name}"
+                p = d / name
+                if name.lower().endswith(".tbw"):
+                    files.append((f"{tag}/{name}", p))
+                elif p.is_dir():
+                    sub = _listdir_with_timeout(p, timeout=10)
+                    if "names" not in sub:
+                        continue
+                    for n2 in sorted(sub["names"]):
+                        if n2.lower().endswith(".tbw") and not n2.startswith("._"):
+                            files.append((f"{tag}/{name}/{n2}", p / n2))
+            for key, f in files:
                 try:
                     st = f.stat()
                 except OSError:
@@ -621,6 +748,23 @@ def refresh_tune_index():
                     entry = {"name": key, "sha1": sha, "error": str(e), "valid": False,
                              "size": st.st_size, "mtime": int(st.st_mtime)}
                 tunes.append(entry)
+        try:
+            est = json.loads((DATA / "ecm_state.json").read_text())
+            cpath = Path((est.get("on_ecm") or {}).get("path") or "")
+            cname = (est.get("on_ecm") or {}).get("name") or cpath.name
+            if cpath.is_file() and not any((t.get("name") or "").endswith(cname) for t in tunes):
+                stt = cpath.stat()
+                raw = cpath.read_bytes()
+                sha = _hash_bytes(raw)
+                cp = cache_path(sha)
+                if not cp.exists():
+                    cp.write_bytes(raw)
+                t = tmx.TbwFile(cp)
+                tunes.append({"name": f"claimed/{cname}", "sha1": sha,
+                              "base_map_id": t.base_map_id, "valid": t.valid,
+                              "size": stt.st_size, "mtime": int(stt.st_mtime)})
+        except Exception:
+            pass
         prof = ta.load_profile()
         mine = set(prof.get("base_map_ids", []))
         for t in tunes:
@@ -666,9 +810,17 @@ def tune_detail(sha1):
     if not cp.exists():
         return None
     t = tmx.TbwFile(cp)
-    return {"entry": entry, "base_map_id": t.base_map_id, "valid": t.valid,
+    out = {"entry": entry, "base_map_id": t.base_map_id, "valid": t.valid,
             "header": ["0x%X" % h for h in t.header],
             "integrity": list(t.integrity_lines())}
+    decoded = tune_read(sha1)
+    if decoded.get("ok"):
+        out["afr"] = decoded.get("afr")
+        out["landmark"] = decoded.get("landmark")
+        out["never_write_tbw"] = True
+    else:
+        out["afr"] = {"error": decoded.get("error")}
+    return out
 
 
 def diff_tunes(sha_a, sha_b):
@@ -680,7 +832,9 @@ def diff_tunes(sha_a, sha_b):
     memo = DIFF_CACHE / f"{sha_a}_{sha_b}.json"
     if memo.exists():
         try:
-            return json.loads(memo.read_text())
+            cached = json.loads(memo.read_text())
+            if "afr_diff" in cached:
+                return cached
         except ValueError:
             pass
     pa, pb = cache_path(sha_a), cache_path(sha_b)
@@ -701,9 +855,18 @@ def diff_tunes(sha_a, sha_b):
     for cat, v in table_map.summarize(rows).items():
         # summarize() returns a Python set for confidences — JSON can't
         summary[cat] = {**v, "confidences": sorted(v["confidences"])}
+    afr_changed = []
+    try:
+        da, db = tbw_read.read_tune(str(pa)), tbw_read.read_tune(str(pb))
+        afr_changed = tbw_read.afr_diff(da, db)
+    except Exception:
+        afr_changed = []
     out = {"a": {"sha1": sha_a, "base_map_id": ta_f.base_map_id},
            "b": {"sha1": sha_b, "base_map_id": tb_f.base_map_id},
-           "identical": not rows, "rows": rows, "summary": summary}
+           "identical": not rows, "rows": rows, "summary": summary,
+           "afr_diff": afr_changed,
+           "afr_scale": tbw_read.AFR_SCALE,
+           "never_write_tbw": True}
     with STORE_LOCK:
         atomic_write(memo, out)
     return out

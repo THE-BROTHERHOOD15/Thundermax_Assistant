@@ -10,3 +10,6 @@ data/proposals/
 
 # Claude Code worktrees (other sessions) — never commit into this repo
 .claude/worktrees/
+
+# Live knowledge archive lives at ~/thundermax-kb, never in git
+kb-data/

@@ -2,7 +2,7 @@
 type: learned
 setup: m8-131-lrst-2into1-tbw
 title: tune M8_131_CAM2_63inj fuelmoto origional (HXSSEDCAAN061617)
-source: /home/joshua/Desktop/M8_131_CAM2_63inj fuelmoto origional.tbw
+source: tunes-from-usb-2026-08-19/M8_131_CAM2_63inj fuelmoto origional.tbw
 date: 2026-08-19
 ---
 

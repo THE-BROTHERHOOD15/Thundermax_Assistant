@@ -9,12 +9,24 @@
     "confidence": "medium",
     "caveat": "confirmed on the 0xC3C9 scalar/limit array only; the main RPMxTPS timing map's scale is assumed equal but UNCONFIRMED."
   },
+  "afr_scale_finding": {
+    "raw_per_afr": 50,
+    "start": "0x1981",
+    "stride_bytes": 4,
+    "signed": true,
+    "landmark": "0b00100000",
+    "evidence": "advancedtiming.tbw vs advancedtimingplusAFR CORRECTION.tbw: 50 signed-i16 cells moved exactly -50 raw. 720/50=14.40 → 670/50=13.40 is −1.00 AFR. Joshua 8-bit landmark 0b00100000=32 tails the band on 225718-byte header-0x84 files at 0x01BB5.",
+    "confidence": "high",
+    "caveat": "Not TMax-screenshot locked. Axis (RPM×TPS vs 1-D curve) unconfirmed. 0x20 is NOT the AFR scale (u16/32 is 19.2, not AFR). Landmark offset is file-family specific — 214470 files keep the 0x1989 band but do not tail it with u32=32."
+  },
   "bands": [
     {
       "name": "afr_target",
       "range": ["0x01989", "0x01BCA"],
       "stride": 8,
       "category": "AFR",
+      "fid": "0x29",
+      "fid_name": "AFR Target Map",
       "confidence": "high",
       "desc": "AFR target region (AFR vs TPS/RPM). Isolated by the advancedtiming -> +AFR-correction pair (180 cells changed, no timing/fuel overlap).",
       "needs_ground_truth": "Read one AFR target cell in TMax Tuner (e.g. 3000rpm/20% TPS) and match its raw value here to lock scale + cell order."
@@ -24,6 +36,8 @@
       "range": ["0x01FC9", "0x02182"],
       "stride": 4,
       "category": "TIMING",
+      "fid": "0x26",
+      "fid_name": "Ign Timing Map vs TPS",
       "confidence": "medium",
       "desc": "Primary ignition timing map (deg BTDC vs TPS/RPM). Changed by both the global -1deg and the +2deg-each-point pairs, not by fuel/AFR-only edits.",
       "needs_ground_truth": "Confirm 11 RPM rows (1000..6000) x 14 TPS cols (0..100%) ordering against M8_131ci_Timing_Tables doc; verify raw/49 == degrees."
@@ -33,6 +47,8 @@
       "range": ["0x05A79", "0x06E03"],
       "stride": 8,
       "category": "AFR_VE",
+      "fid": "0x20",
+      "fid_name": "Front Fuel Map (VE / fuelflow vs TPS @ RPM)",
       "confidence": "high",
       "desc": "Five ~900-byte fuel/VE pages (~0x400 apart), each ~74-76 cells. Rewritten by AFR-target edits and by fuel edits (both AFR-correction and +fuel pairs land here) -> fuel VE pages that AutoTune adjusts to hit the AFR target.",
       "subpages": ["0x05A79", "0x05E89", "0x06289", "0x06689", "0x06A45"],

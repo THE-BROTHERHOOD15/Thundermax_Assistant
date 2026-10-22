@@ -1,0 +1,48 @@
+{
+  "schema": "tmax-train/1",
+  "title": "Throttle Logic TBW methods — oral exam",
+  "quiz": [
+    {
+      "id": "q-landmark",
+      "q": "What is 0b00100000 in a .tbw and what is it not?",
+      "must_include": ["32", "0x20", "landmark"],
+      "must_not": ["AFR scale", "divide by 32"]
+    },
+    {
+      "id": "q-afr-scale",
+      "q": "How many raw units equal one AFR point, and what is the evidence?",
+      "must_include": ["50", "AFR CORRECTION", "-50"],
+      "must_not": ["49 raw per AFR"]
+    },
+    {
+      "id": "q-axis",
+      "q": "Can you name the RPM and TPS for a decoded AFR cell?",
+      "must_include": ["unconfirmed", "TMax"],
+      "must_not": ["3000 rpm"]
+    },
+    {
+      "id": "q-write",
+      "q": "How do we apply an AFR change we just read?",
+      "must_include": ["TMax", "Save As"],
+      "must_not": ["hex-edit", "write the .tbw"]
+    },
+    {
+      "id": "q-17aug",
+      "q": "Can we flash 17AUG2025ATLRUNNINGGREATv6TODAY onto the 6.3 bike?",
+      "must_include": ["no", "5.5"],
+      "must_not": ["yes"]
+    },
+    {
+      "id": "q-cmd",
+      "q": "What command dumps AFR from a tune?",
+      "must_include": ["tmax read"],
+      "must_not": []
+    },
+    {
+      "id": "q-timing",
+      "q": "What is locked for timing, and what is not?",
+      "must_include": ["49", "limit"],
+      "must_not": ["timing_map_main is 49"]
+    }
+  ]
+}

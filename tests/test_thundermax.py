@@ -155,5 +155,98 @@ class TestTableMap(Base):
             table_map.classify_diff(a, b)
 
 
+class TestTbwRead(Base):
+    def _plant_afr(self, raw_values, landmark_at=None):
+        data = bytearray(synthetic_tbw())
+        off = 0x1981
+        for v in raw_values:
+            struct.pack_into("<h", data, off, v)
+            struct.pack_into("<h", data, off + 2, 0)
+            off += 4
+        if landmark_at is None:
+            landmark_at = off
+        struct.pack_into("<I", data, landmark_at, 32)  # 0b00100000
+        return data
+
+    def test_afr_scale_50(self):
+        import tbw_read
+        p = self.write("a.tbw", self._plant_afr([0, 720, 720, 670]))
+        decoded = tbw_read.read_tune(p)
+        afrs = [c["afr"] for c in decoded["afr"]["cells"] if c["kind"] == "afr"]
+        self.assertEqual(afrs, [14.4, 14.4, 13.4])
+        self.assertEqual(decoded["afr"]["summary"]["min"], 13.4)
+        self.assertEqual(decoded["afr"]["summary"]["max"], 14.4)
+        self.assertTrue(decoded["never_write_tbw"])
+
+    def test_landmark_stops_scan(self):
+        import tbw_read
+        data = self._plant_afr([720, 720])
+        # garbage after landmark must not become AFR
+        struct.pack_into("<h", data, 0x1981 + 4 * 3, 800)
+        p = self.write("a.tbw", data)
+        decoded = tbw_read.read_tune(p)
+        afrs = [c["afr"] for c in decoded["afr"]["cells"] if c["kind"] == "afr"]
+        self.assertEqual(afrs, [14.4, 14.4])
+
+    def test_afr_diff_minus_one(self):
+        import tbw_read
+        a = self.write("old.tbw", self._plant_afr([720, 720]))
+        b = self.write("new.tbw", self._plant_afr([670, 670]))
+        diff = tbw_read.afr_diff(tbw_read.read_tune(a), tbw_read.read_tune(b))
+        self.assertEqual([round(d["delta"], 2) for d in diff], [-1.0, -1.0])
+
+    def test_read_does_not_write(self):
+        import tbw_read
+        p = self.write("a.tbw", self._plant_afr([720]))
+        before = p.read_bytes()
+        tbw_read.read_tune(p)
+        tbw_read.propose_from_read(tbw_read.read_tune(p), "afr-audit")
+        self.assertEqual(p.read_bytes(), before)
+
+    def test_propose_never_write_flag(self):
+        import tbw_read
+        p = self.write("a.tbw", self._plant_afr([615]))  # 12.30
+        prop = tbw_read.propose_from_read(tbw_read.read_tune(p), "all")
+        self.assertTrue(prop["never_write_tbw"])
+        self.assertIn("TMax", prop["apply_in"])
+        self.assertTrue(any(c["table"] == "afr_target" for c in prop["changes"]))
+
+    def test_commands_0x29_labels_afr(self):
+        import tbw_read
+        p = self.write("a.tbw", self._plant_afr([720, 670]))
+        decoded = tbw_read.read_tune(p)
+        cmd = decoded["commands"]["0x29"]
+        self.assertEqual(cmd["fid"], 0x29)
+        self.assertEqual(cmd["name"], "AFR Target Map")
+        self.assertEqual(decoded["afr"]["fid"], 0x29)
+        self.assertEqual(cmd["summary"]["min"], 13.4)
+        self.assertEqual(cmd["summary"]["max"], 14.4)
+
+    def test_commands_legend_has_three_fids(self):
+        import tbw_read
+        self.assertEqual(set(tbw_read.COMMANDS), {0x20, 0x26, 0x29})
+        p = self.write("a.tbw", self._plant_afr([720]))
+        decoded = tbw_read.read_tune(p)
+        self.assertEqual(set(decoded["commands"]), {"0x20", "0x26", "0x29"})
+        self.assertEqual(decoded["commands"]["0x20"]["aka"], "VE")
+        self.assertEqual(decoded["commands"]["0x26"]["fid"], 0x26)
+
+    def test_0x29_trailer_after_afr(self):
+        """Plant [0x20,0,0x20,0x20, 0x29,0,0x29,0x29] as the AFR-scan tail."""
+        import tbw_read
+        data = bytearray(self._plant_afr([720, 720]))
+        # landmark is already u32 32 at end of cells; extend into a 0x20+0x29 directory
+        off = 0x1981 + 4 * 2  # after two AFR cells; _plant_afr put landmark here
+        struct.pack_into("<8I", data, off,
+                         0x20, 0, 0x20, 0x20,
+                         0x29, 0, 0x29, 0x29)
+        p = self.write("a.tbw", bytes(data))
+        decoded = tbw_read.read_tune(p)
+        trailers = decoded["commands"]["0x29"]["trailers"]
+        self.assertTrue(any(int(t, 16) == off for t in trailers), trailers)
+        afrs = [c["afr"] for c in decoded["afr"]["cells"] if c["kind"] == "afr"]
+        self.assertEqual(afrs, [14.4, 14.4])
+
+
 if __name__ == "__main__":
     unittest.main()

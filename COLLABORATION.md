@@ -41,6 +41,7 @@ Tune loop skill: `thundermax-tune-loop` (complaint + bag + diff + TMax audit + s
 |---|---|
 | Tune files (`.tbw`, ~30) | `/mnt/nas/ADMIN/LOCAL NAS/THROTTLE LOGIC/` (NAS not writable from tower user) |
 | USB TMAX pull 2026-08-19 | `/home/joshua/tmax-exchange/tunes-from-usb-2026-08-19/` (read-only copies) |
+| Laptop Bluetooth pull 2026-09-16 | `/home/joshua/tmax-exchange/from-laptop/2026-09-16/` (read-only copies; see `reports/laptop_2026-09-16_tune_index.md`) |
 | Latest pair (Desktop) | `/home/joshua/Desktop/M8_131_CAM2_63inj fuelmoto origional.tbw` + `auto tune run from ch home 330 345 degrees f head temp.tbw` |
 | Tuning manuals & guides | `/mnt/nas/ADMIN/LOCAL NAS/THROTTLE LOGIC/TMAX TUNING MANUAL/` |
 | AI project docs (ride packet, tune card, templates) | `/mnt/nas/ADMIN/LOCAL NAS/NEWER IPAD 16SEP2025/Thundermax AI Project/` |
@@ -54,8 +55,17 @@ Tune loop skill: `thundermax-tune-loop` (complaint + bag + diff + TMax audit + s
   6.3 flash file, header `0x84/0x143`), **225990** (other 131/550 hunt maps).
 - Header: four LE u32 at 0x00 (`0x87, 0x4000, 0x1, 0x147` in every sample).
 - **Base-map ID** at `0x10`: one length byte (0x10=16) + 16 ASCII chars
-  (e.g. `HYSSPVCAHN051320`, `HXSSEDCAAN06161…`, `ZZSSQXETDN100720`).
-  This is the only ASCII string in the file.
+  (e.g. `HYSSPVCAHN051320`, `HXSSEDCAAN061617`, `ZZSSQXETDN100720`).
+  This is the only ASCII string in the file. **Answer key:**
+  `data/basemapdefs/BASEMAPDEFSM8.PPM` (TMax M8 catalog, not NetPBM).
+  `tmax catalog ID` / `tmax info FILE.tbw` look it up. Anatomy of a
+  standard ID: 10-char combo + MMDDYY mint date. First two chars are the
+  M8 family (`HX` = engine-family index 23 = live house base). HISTORY in
+  the PPM is parent→child lineage. The ID names the **TMax base the file
+  started from**, not later shop hardware (6.3 / 550 still carry
+  `HXSSEDCAAN061617`). `HYSS*` / `ZZSS*` / `ZEYD*` are other libraries
+  (`BASEMAPDEFS5.PPM` / SLK), not this M8 file. ItemId integers also appear
+  as coincidental u32s inside table data — do not treat them as pointers.
 - `0x21`–`~0x3C0`: per-section metadata/checksums (these bytes churn
   whenever *any* table changes).
 - Beyond `~0x3C0`: table data. Cells are little-endian fields on a **4- or
@@ -73,10 +83,45 @@ Tune loop skill: `thundermax-tune-loop` (complaint + bag + diff + TMax audit + s
   `0xC3C9` timing-limit array by exactly −49 raw → **~49 raw units per
   degree** (34°×49 = 1666). Medium confidence: measured on that array, and
   *assumed* (not yet proven) for the main RPM×TPS timing map.
-- **Per-cell engineering-unit scaling is still unconfirmed for most tables.**
-  Diff analysis locates *where* each table lives and *what category* it is,
-  but exact axis order and unit scale need one TMax Tuner ground-truth
-  reading per band — the top remaining open task.
+- **AFR scale (2026-09-16, Joshua 8-bit landmark):** signed i16, 4-byte
+  stride from `0x1981`. **50 raw = 1.00 AFR** (high): the AFR-correction
+  pair moved 50 cells by exactly −50 raw (14.40→13.40). Landmark
+  `0b00100000`=32 tails that band on 225718-byte `0x84` files. Axis still
+  unconfirmed. `tmax read FILE.tbw` dumps the curve; edits still TMax-only.
+- **Module-command FIDs (2026-09-16):** `TMaxI_ModuleCommandStaticDefinitions.dat`
+  names `0x20` Front Fuel Map (VE / fuelflow vs TPS @ RPM, SID 0-63),
+  `0x26` Ign Timing Map vs TPS, `0x29` AFR Target Map. `tmax read` prints
+  all three. 0x20 is also the directory marker on trailers; fuel cells are
+  the `afr_ve_pages` band (scale unlocked). 0x26 map scale unconfirmed
+  (49 raw/deg is the timing-limit array only).
+- **Per-cell axis order is still unconfirmed.** We can read AFR numbers;
+  we cannot yet name RPM/TPS for a cell without one TMax screenshot.
+
+## Tuning laptop pipeline (cemented 2026-09-16)
+
+Canonical path: `/opt/home-mesh/LENOVO-TUNING-LAPTOP.md`.
+
+The tuning laptop is Windows **LENOVO TUNING LAPTOP**. Bluetooth
+`AC:50:DE:60:65:B8` is **already connected on the Mac mini**
+(`1C:F6:4C:58:68:47`, user `jd`). It Bluetooth-drops `.tbw` saves onto
+the mini (`~/Downloads`, `~/Desktop/THUNDERMAX TUNES`). Wi-Fi is
+`192.168.1.247` / `LENOVO.local` (pingable from the tower; SMB guest
+denied; OpenSSH for Windows on :22 needs a key/password we do not have).
+Tower AX210 Bluetooth (`hci0`) is **down** — do not pair from the tower
+unless Joshua starts `bluetooth.service`. Stale IPs: `.246` JOSHUA-H88,
+`.110`, `.192`, `.50.68`.
+
+To pull a new haul: rsync those folders over SSH from the mini into
+`~/tmax-exchange/from-laptop/<date>/` on the tower, sha256-verify against
+the source, then run `thundermax_parser.py scan`, `tbw_read.py`,
+`table_map.py classify` against a same-size/same-base baseline, and
+`tune_assistant.py sync` (+ `./tmax kb ingest` for the full three-layer
+KB). 2026-09-16 pull found one real hand-edited revision on our base map
+(`FLASH THIS - 131 STEADY 35 SMOOTH 08-08.tbw`, `HYSSPVCAHN051320` —
+real timing + fuel-rich-correction changes, not autotune drift) and one
+foreign file (`petemaconautomap.tbw`, `HTSSOJSAAN010423`, `HT` family —
+not this bike, correctly excluded from `sync`). Full writeup:
+`reports/laptop_2026-09-16_tune_index.md`.
 
 ## House tuning rules (from validated shop history)
 

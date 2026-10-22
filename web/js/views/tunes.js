@@ -6,6 +6,7 @@ let selected = []; // [sha1, sha1]
 
 export async function mount(root, rest) {
   if (rest[0] === 'diff' && rest[1] && rest[2]) return mountDiff(root, rest[1], rest[2]);
+  if (rest[0] === 'read' && rest[1]) return mountRead(root, rest[1]);
   selected = [];
   root.append(el('h1', { class: 'page' }, 'Tune library'));
   const bar = el('div', { style: 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px' });
@@ -69,9 +70,12 @@ async function renderList(bar, card) {
       diffBtn.disabled = selected.length !== 2;
     });
     cb.dataset.sha = t.sha1 || '';
+    const nameCell = t.sha1
+      ? el('a', { href: `#/tunes/read/${t.sha1}` }, t.name)
+      : t.name;
     table.append(el('tr', {},
       el('td', {}, t.sha1 ? cb : ''),
-      el('td', {}, t.name),
+      el('td', {}, nameCell),
       el('td', { class: 'mono' }, t.base_map_id || t.error || '—'),
       el('td', {}, t.mine ? badge('my setup', 'ok') : ''),
       el('td', {}, t.valid ? '✓' : el('span', { class: 'badge bad' }, 'invalid')),
@@ -126,10 +130,62 @@ async function mountDiff(root, a, b) {
       el('td', { class: 'mono' }, r.delta_mode != null ? String(r.delta_mode) : '—')));
   }
   wrap.append(table);
-  card.append(wrap,
+  card.append(wrap);
+  if ((d.afr_diff || []).length) {
+    card.append(el('h3', { style: 'margin:16px 0 8px' }, `AFR cells changed (${d.afr_diff.length}) · scale ${d.afr_scale || 50} raw/AFR`));
+    const afrWrap = el('div', { class: 'scroll-x' });
+    const afrT = el('table', { class: 'data' },
+      el('tr', {}, el('th', {}, 'offset'), el('th', {}, 'old AFR'), el('th', {}, 'new AFR'), el('th', {}, 'Δ')));
+    for (const r of d.afr_diff.slice(0, 80)) {
+      afrT.append(el('tr', {},
+        el('td', { class: 'mono' }, `0x${Number(r.offset).toString(16).toUpperCase()}`),
+        el('td', { class: 'mono' }, r.old.toFixed(2)),
+        el('td', { class: 'mono' }, r.new.toFixed(2)),
+        el('td', { class: 'mono' }, (r.delta >= 0 ? '+' : '') + r.delta.toFixed(2))));
+    }
+    afrWrap.append(afrT);
+    card.append(afrWrap);
+  }
+
+  card.append(
     el('div', { class: 'muted', style: 'font-size:12px;margin-top:10px' },
-      'Raw cell values are not yet in engineering units — read direction and location, not absolute numbers. ',
-      'AUTOTUNE and METADATA churn on every ride/save and are usually not deliberate edits.'));
+      'AFR numbers are decoded at 50 raw/AFR (high). Axis (RPM×TPS) is not locked — do not treat a cell index as a TMax grid coordinate. ',
+      'AUTOTUNE and METADATA churn on every ride/save and are usually not deliberate edits. Never hex-edit a .tbw.'));
+}
+
+async function mountRead(root, sha) {
+  root.append(el('h1', { class: 'page' }, 'Tune read ',
+    el('a', { href: '#/tunes', class: 'muted', style: 'font-size:13px' }, '← library')));
+  const card = el('div', { class: 'card' }, el('div', { class: 'muted' }, 'decoding AFR…'));
+  root.append(card);
+  let d;
+  try { d = await get(`/api/tunes/${sha}/read`); }
+  catch (e) { card.textContent = `read failed: ${e.message}`; return; }
+  card.textContent = '';
+  if (d.error && !d.ok) return card.append(el('div', { class: 'empty' }, d.error));
+
+  const s = d.afr?.summary || {};
+  card.append(
+    el('div', { class: 'muted', style: 'margin-bottom:10px' },
+      `${d.file || sha} · ${d.base_map_id || ''} · landmark ${d.landmark?.bit} ×${d.landmark?.u32_count || 0}`),
+    el('div', { class: 'tiles', style: 'margin-bottom:14px' },
+      el('div', { class: 'tile ok' }, el('div', { class: 'k' }, 'AFR scale'), el('div', { class: 'v' }, `${d.afr?.scale_raw_per_afr || 50} raw`)),
+      el('div', { class: 'tile' }, el('div', { class: 'k' }, 'cells'), el('div', { class: 'v' }, String(s.n ?? '—'))),
+      el('div', { class: 'tile' }, el('div', { class: 'k' }, 'min'), el('div', { class: 'v' }, s.min != null ? s.min.toFixed(2) : '—')),
+      el('div', { class: 'tile' }, el('div', { class: 'k' }, 'max'), el('div', { class: 'v' }, s.max != null ? s.max.toFixed(2) : '—')),
+      el('div', { class: 'tile' }, el('div', { class: 'k' }, 'mean'), el('div', { class: 'v' }, s.mean != null ? s.mean.toFixed(2) : '—')),
+      el('div', { class: 'tile' }, el('div', { class: 'k' }, 'WOT window'), el('div', { class: 'v' }, String(s.n_wot_window ?? '—'))),
+    ),
+    el('div', { class: 'muted', style: 'font-size:12px;margin-bottom:8px' },
+      'Axis unconfirmed. These are AFR numbers, not a TMax RPM×TPS grid. Never hex-edit.'),
+  );
+  const vals = d.afr?.values || [];
+  const grid = el('div', { class: 'afr-grid mono' });
+  for (const v of vals) {
+    const cls = v < 12.2 ? 'afr-rich' : (v > 14.6 ? 'afr-lean' : '');
+    grid.append(el('span', { class: cls }, v.toFixed(2)));
+  }
+  card.append(grid);
 }
 
 export function unmount() {}

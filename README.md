@@ -23,8 +23,12 @@ when a command needs it):
 ```bash
 # Parser (offline, no deps)
 ./tmax info "/mnt/nas/ADMIN/LOCAL NAS/THROTTLE LOGIC/currenttune.tbw"
+./tmax catalog HXSSEDCAAN061617         # M8 PPM answer key (family/HISTORY)
+./tmax read FILE.tbw                    # FID 0x20 fuel/VE, 0x26 timing, 0x29 AFR
 ./tmax scan "/mnt/nas/ADMIN/LOCAL NAS/THROTTLE LOGIC" -o reports/tune_index.md
 ./tmax compare old.tbw new.tbw          # diff with named-table labels
+./tmax log ride.csv                     # fuel % suggestions; does not write the .tbw
+./tmax notes get FILE.tbw               # shop note keyed by SHA-256
 
 # ECM pointer (claimed what's on the bike — copies files, never hex-edits)
 ./tmax ecm show
@@ -43,6 +47,12 @@ when a command needs it):
 
 # Self-check (files, syntax, unit tests, corpus)
 ./tmax verify
+
+# Training pipeline (every seat: Grok, Claude, new operators)
+./tmax train brief
+./tmax train drill          # fail-closed; must exit 0
+./tmax train all            # drill + brief + KB ingest + skill copies
+# Curriculum: train/CURRICULUM.md
 
 # Three-layer knowledge base (~/thundermax-kb — originals never edited)
 ./tmax kb init
